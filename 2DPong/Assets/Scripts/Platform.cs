@@ -4,13 +4,17 @@ using UnityEngine;
 public class Platform : MonoBehaviour
 {
     Camera cameraOfGame;
-    private Transform platformTransform;
+    [HideInInspector]
+    public Transform platformTransform;
 
     private float yPositionOfPlatform;
 
-    private float leftBorderForPlatform;
-    private float rightBorderForPlatform;
+    public float leftBorderForPlatform;
+    public float rightBorderForPlatform;
+    private float ballHitPlatformXPoint;
 
+    [HideInInspector]
+    public GameManager gameManager;
 
     private void OnEnable()
     {
@@ -19,8 +23,22 @@ public class Platform : MonoBehaviour
         yPositionOfPlatform = platformTransform.position.y;
 
         //fixing the movemet limit points on X axis for platform
-        leftBorderForPlatform = -GameManager.horisScreenSize / 2 + platformTransform.localScale.x/2;
-        rightBorderForPlatform = GameManager.horisScreenSize / 2 - platformTransform.localScale.x / 2;
+        //leftBorderForPlatform = -GameManager.horisScreenSize/2  + platformTransform.localScale.x/2;
+        //rightBorderForPlatform = GameManager.horisScreenSize/2  - platformTransform.localScale.x/2;
+    }
+
+
+    private void OnCollisionEnter2D(Collision2D collision)
+    {
+        if (collision.gameObject.TryGetComponent<Ball>(out Ball ball)) {
+
+            //this value will determine if ball will move left or right depending to wich side of platform it hits
+            //so player can manage the ball bounce direction
+            ballHitPlatformXPoint = ball.ballTransform.position.x - platformTransform.position.x;
+            Vector2 velosityOfBall = ball.ballRigidbody.velocity;
+            ball.ballRigidbody.velocity = Vector2.zero;
+            ball.ballRigidbody.AddForce(new Vector2(ballHitPlatformXPoint, 1).normalized * velosityOfBall.magnitude, ForceMode2D.Impulse);
+        }
     }
 
     private void FixedUpdate()
@@ -31,9 +49,17 @@ public class Platform : MonoBehaviour
             platformTransform.position = new Vector3 (cameraOfGame.ScreenToWorldPoint(Input.mousePosition).x, yPositionOfPlatform, 0);
 
             //holding the platform inside the screen borders
-            if (platformTransform.position.x < leftBorderForPlatform) platformTransform.position = new Vector3(leftBorderForPlatform, yPositionOfPlatform, 0);
-            if (platformTransform.position.x > rightBorderForPlatform) platformTransform.position = new Vector3(rightBorderForPlatform, yPositionOfPlatform, 0);
+            if (platformTransform.position.x < leftBorderForPlatform) platformTransform.position = new Vector2(leftBorderForPlatform, yPositionOfPlatform);
+            if (platformTransform.position.x > rightBorderForPlatform) platformTransform.position = new Vector2(rightBorderForPlatform, yPositionOfPlatform);
+
+            //if game is not started it will here
+            if (!gameManager.gameIsOn)
+            {
+                gameManager.gameIsOn = true;
+                gameManager.startTheGame();
+            }
         }
+        
     }
 
 }

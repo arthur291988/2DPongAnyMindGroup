@@ -1,0 +1,56 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!687078895 &4343727234628468602
+SpriteAtlas:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: EnemyAtlas
+  m_EditorData:
+    serializedVersion: 2
+    textureSettings:
+      serializedVersion: 2
+      anisoLevel: 1
+      compressionQuality: 50
+      maxTextureSize: 2048
+      textureCompression: 0
+      filterMode: 1
+      generateMipMaps: 0
+      readable: 0
+      crunchedCompression: 0
+      sRGB: 1
+    platformSettings: []
+    packingSettings:
+      serializedVersion: 2
+      padding: 4
+      blockOffset: 1
+      allowAlphaSplitting: 0
+      enableRotation: 1
+      enableTightPacking: 1
+      enableAlphaDilation: 0
+    secondaryTextureSettings: {}
+    variantMultiplier: 1
+    packables:
+    - {fileID: 102900000, guid: b815dcc21aea6c1448296a94a9f1d35c, type: 3}
+    bindAsDefault: 1
+    isAtlasV2: 0
+    cachedData: {fileID: 0}
+  m_MasterAtlas: {fileID: 0}
+  m_PackedSprites:
+  - {fileID: 21300000, guid: cac16e923d5ddf84ca3261203527fa79, type: 3}
+  - {fileID: 21300000, guid: 8e79b9d3b556f6548b0dc1d00f1b7230, type: 3}
+  - {fileID: 21300000, guid: 3bce2415ca12c064693dca62be2f9085, type: 3}
+  - {fileID: 21300000, guid: 637277e8516be4142ba81a7777ba2631, type: 3}
+  - {fileID: 21300000, guid: 231d016bc51b4f64f897b0eda49d6e99, type: 3}
+  - {fileID: 21300000, guid: 2612aa6b14f58fa42847f51179e7d206, type: 3}
+  m_PackedSpriteNamesToIndex:
+  - 3
+  - 21
+  - 31
+  - 2
+  - 32
+  - 1
+  m_RenderDataMap: {}
+  m_Tag: EnemyAtlas
+  m_IsVariant: 0
