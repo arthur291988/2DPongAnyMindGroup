@@ -12,8 +12,6 @@ public class Platform : MonoBehaviour
     public float leftBorderForPlatform;
     public float rightBorderForPlatform;
     private float ballHitPlatformXPoint;
-
-    [HideInInspector]
     public GameManager gameManager;
 
     private void OnEnable()
@@ -38,6 +36,7 @@ public class Platform : MonoBehaviour
             Vector2 velosityOfBall = ball.ballRigidbody.velocity;
             ball.ballRigidbody.velocity = Vector2.zero;
             ball.ballRigidbody.AddForce(new Vector2(ballHitPlatformXPoint, 1).normalized * velosityOfBall.magnitude, ForceMode2D.Impulse);
+            ball.rotationSpeed = GameManager.BALL_ROTATION_SPEED;
         }
     }
 

@@ -12,8 +12,16 @@ public class Ball : MonoBehaviour
     [HideInInspector]
     public float startImpulseOfBall;
 
+    [HideInInspector]
+    public float rotationSpeed;
+    [HideInInspector]
+    public GameManager gameManager;
+
+
+
     private void OnEnable()
     {
+        rotationSpeed = 0;
         startImpulseOfBall = 10;
         ballTransform = transform;
         ballRigidbody = GetComponent<Rigidbody2D>();
@@ -26,13 +34,14 @@ public class Ball : MonoBehaviour
     public void startTheBall()
     {
         ballRigidbody.bodyType = RigidbodyType2D.Dynamic;
-        ballRigidbody.AddForce(Vector2.up * startImpulseOfBall, ForceMode2D.Impulse);
+        ballRigidbody.AddForce(new Vector2(Random.Range(-0.3f,0.3f),1) * startImpulseOfBall, ForceMode2D.Impulse);
+        rotationSpeed = GameManager.BALL_ROTATION_SPEED;
     }
 
-    //private void FixedUpdate()
-    //{
-    //    ballRigidbody.MoveRotation(Quaternion.Euler(0, 0, Time.fixedDeltaTime*2));
-    //}
+    private void FixedUpdate()
+    {
+        if (gameManager.gameIsOn) ballRigidbody.MoveRotation(ballRigidbody.rotation - rotationSpeed * Time.fixedDeltaTime);
+    }
 
     // Start is called before the first frame update
     void Start()
@@ -43,6 +52,6 @@ public class Ball : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        
+        if (rotationSpeed > 500) rotationSpeed = Mathf.Lerp(rotationSpeed, 500,0.003f);
     }
 }

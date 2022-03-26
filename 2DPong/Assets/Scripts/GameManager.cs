@@ -30,6 +30,7 @@ public class GameManager : MonoBehaviour
     private Dictionary<Vector2, Vector2> allPositionsForEnemies; //first is index of position, second is coordinates
 
     private const float PLATFORM_DISTANCE_FROM_BOTTOM = 3;
+    public static float BALL_ROTATION_SPEED = 2000;
 
     [HideInInspector]
     public GameObject ObjectPulled;
@@ -71,6 +72,7 @@ public class GameManager : MonoBehaviour
     private void activateTheBall()
     {
         ball.transform.position = new Vector3(platform.platformTransform.position.x, platform.platformTransform.position.y+ platform.platformTransform.localScale.y/3, 0);
+        ball.gameManager = this;
         ball.gameObject.SetActive(true);
     }
 
@@ -120,7 +122,8 @@ public class GameManager : MonoBehaviour
     }
 
     //called from platform script while player touches screen firs time
-    public void startTheGame() {
+    public void startTheGame()
+    {
         ball.startTheBall();
     }
 
