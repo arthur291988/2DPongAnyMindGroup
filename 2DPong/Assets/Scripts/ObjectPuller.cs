@@ -7,15 +7,20 @@ public class ObjectPuller : MonoBehaviour
 
     public static ObjectPuller current;
 
-    private int pullofObjects3 = 3;
-    private int pullofObjects35 = 35;
+    private int pullOfObjects2 = 2;
+    private int pullOfObjects3 = 3;
+    private int pullOfObjects35 = 35;
     private bool willGrow;
 
+    [SerializeField]
+    private GameObject ballBurstEffect;
     [SerializeField]
     private GameObject destroyEffect;
     [SerializeField]
     private GameObject enemy;
 
+    [HideInInspector]
+    public List<GameObject> ballBurstEffectPull;
     [HideInInspector]
     public List<GameObject> destroyEffectPull;
     [HideInInspector]
@@ -31,21 +36,32 @@ public class ObjectPuller : MonoBehaviour
 
     private void OnEnable()
     {
+        ballBurstEffectPull = new List<GameObject>();
         destroyEffectPull = new List<GameObject>();
         enemyPull = new List<GameObject>();
 
-        for (int i = 0; i < pullofObjects3; i++)
+        for (int i = 0; i < pullOfObjects2; i++)
+        {
+            GameObject obj = (GameObject)Instantiate(ballBurstEffect);
+            obj.SetActive(false);
+            ballBurstEffectPull.Add(obj);
+        }
+        for (int i = 0; i < pullOfObjects3; i++)
         {
             GameObject obj = (GameObject)Instantiate(destroyEffect);
             obj.SetActive(false);
             destroyEffectPull.Add(obj);
         }
-        for (int i = 0; i < pullofObjects35; i++)
+        for (int i = 0; i < pullOfObjects35; i++)
         {
             GameObject obj = (GameObject)Instantiate(enemy);
             obj.SetActive(false);
             enemyPull.Add(obj);
         }
+    }
+    public List<GameObject> GetballBurstEffectPullList()
+    {
+        return ballBurstEffectPull;
     }
     public List<GameObject> GetDestroyEffectPullList()
     {

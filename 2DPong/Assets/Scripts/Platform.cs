@@ -14,6 +14,7 @@ public class Platform : MonoBehaviour
     private float ballHitPlatformXPoint;
     public GameManager gameManager;
 
+
     private void OnEnable()
     {
         cameraOfGame = Camera.main;
@@ -51,7 +52,11 @@ public class Platform : MonoBehaviour
             if (platformTransform.position.x < leftBorderForPlatform) platformTransform.position = new Vector2(leftBorderForPlatform, yPositionOfPlatform);
             if (platformTransform.position.x > rightBorderForPlatform) platformTransform.position = new Vector2(rightBorderForPlatform, yPositionOfPlatform);
 
-            //if game is not started it will here
+            if (!gameManager.gameIsOn) gameManager.ball.ballTransform.position = new Vector2(platformTransform.position.x, platformTransform.position.y + platformTransform.localScale.y / 3);
+        }
+        if (Input.GetMouseButtonDown(0))
+        { 
+            //if game is not started, it will here
             if (!gameManager.gameIsOn)
             {
                 gameManager.gameIsOn = true;

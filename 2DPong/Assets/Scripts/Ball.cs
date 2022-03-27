@@ -17,15 +17,24 @@ public class Ball : MonoBehaviour
     [HideInInspector]
     public GameManager gameManager;
 
+    private bool trapCheckInProcess;
 
+
+    [HideInInspector]
+    public GameObject ObjectPulled;
+    [HideInInspector]
+    public List<GameObject> ObjectPulledList;
+    [HideInInspector]
+    public TrailRenderer ballTrail;
 
     private void OnEnable()
     {
+        trapCheckInProcess = false; 
         rotationSpeed = 0;
-        startImpulseOfBall = 10;
+        startImpulseOfBall = 10; 
         ballTransform = transform;
         ballRigidbody = GetComponent<Rigidbody2D>();
-
+        if (ballTrail == null) ballTrail = GetComponent<TrailRenderer>();
         //ball is steady on enable while it gets the command
         ballRigidbody.bodyType = RigidbodyType2D.Kinematic;
 
@@ -38,20 +47,50 @@ public class Ball : MonoBehaviour
         rotationSpeed = GameManager.BALL_ROTATION_SPEED;
     }
 
+    public void disactivateTheBall(bool win)
+    {
+        ballBurstEffect();
+        ballRigidbody.bodyType = RigidbodyType2D.Kinematic; 
+        gameObject.SetActive(false);
+        gameManager.gameIsOn = false;
+        if (!win) gameManager.reduceAvailableBalls();
+    }
+
+    //used to give breaking impulse to the ball so it can move in vertical direction if it was horizontal trap (when the y velocity is very low or zero)
+    IEnumerator breakeHorizontalTrap() {
+        trapCheckInProcess = true; //used to prevent multiple calls for check
+        yield return new WaitForSeconds(3);
+        ballRigidbody.velocity = Vector2.zero; //clear velocity to prevent double impulse
+        if (ballRigidbody.velocity.y < 1 && ballRigidbody.velocity.y > -1)
+        {
+            float yAxisVelocity = Random.Range(0, 2) == 0 ? 1 : -1;
+            ballRigidbody.AddForce(new Vector2(Random.Range(-0.3f, 0.3f), yAxisVelocity) * startImpulseOfBall, ForceMode2D.Impulse);
+            rotationSpeed = GameManager.BALL_ROTATION_SPEED;
+        }
+        trapCheckInProcess = false;
+    }
+
+    private void ballBurstEffect() {
+        ObjectPulledList = ObjectPuller.current.GetballBurstEffectPullList();
+        ObjectPulled = ObjectPuller.current.GetGameObjectFromPull(ObjectPulledList);
+        ObjectPulled.transform.position = transform.position;
+        ObjectPulled.SetActive(true);
+    }
+
     private void FixedUpdate()
     {
         if (gameManager.gameIsOn) ballRigidbody.MoveRotation(ballRigidbody.rotation - rotationSpeed * Time.fixedDeltaTime);
     }
 
-    // Start is called before the first frame update
-    void Start()
-    {
-        
-    }
-
     // Update is called once per frame
     void Update()
     {
+        Debug.Log(ballRigidbody.velocity.y);
+        //rotation speed of ball decreases with time 
         if (rotationSpeed > 500) rotationSpeed = Mathf.Lerp(rotationSpeed, 500,0.003f);
+
+        if (gameManager.gameIsOn && ballRigidbody.velocity.y < 1 && ballRigidbody.velocity.y > -1 && !trapCheckInProcess) breakeHorizontalTrap();
+
+        if (ballTransform.position.y <= -gameManager.vertScreenSize / 2 && gameManager.gameIsOn) disactivateTheBall(false);
     }
 }

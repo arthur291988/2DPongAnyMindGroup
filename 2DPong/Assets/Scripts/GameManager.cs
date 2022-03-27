@@ -15,8 +15,8 @@ public class GameManager : MonoBehaviour
     private GameObject TopBorder;
     [SerializeField]
     private Platform platform;
-    [SerializeField]
-    private Ball ball;
+
+    public Ball ball;
 
     [HideInInspector]
     public bool gameIsOn;
@@ -25,7 +25,7 @@ public class GameManager : MonoBehaviour
     [HideInInspector]
     public float horisScreenSize;
 
-    private const int VERTICAL_ENEMY_MAX_COUNT = 7;
+    private const int VERTICAL_ENEMY_MAX_COUNT = 6;
     private const int HORIZONTAL_ENEMY_MAX_COUNT = 4;
     private Dictionary<Vector2, Vector2> allPositionsForEnemies; //first is index of position, second is coordinates
 
@@ -37,9 +37,14 @@ public class GameManager : MonoBehaviour
     [HideInInspector]
     public List<GameObject> ObjectPulledList;
 
+    [SerializeField]
+    private List<GameObject> availableBalls;
+    private int indexOfCurrentBall;
+
     // Start is called before the first frame update
     void Start()
     {
+        indexOfCurrentBall = 2;
         allPositionsForEnemies = new Dictionary<Vector2, Vector2>();
         gameIsOn = false;
         cameraOfGame = Camera.main;
@@ -48,7 +53,7 @@ public class GameManager : MonoBehaviour
         horisScreenSize = vertScreenSize * Screen.width / Screen.height;
         setTheBordersToScreenFrame();
         activateThePlatform();
-        activateTheBall();
+        activateTheBall(false);
         setTheEnemies();
     }
 
@@ -69,10 +74,14 @@ public class GameManager : MonoBehaviour
 
     }
 
-    private void activateTheBall()
+    private void activateTheBall(bool isNextBall)
     {
-        ball.transform.position = new Vector3(platform.platformTransform.position.x, platform.platformTransform.position.y+ platform.platformTransform.localScale.y/3, 0);
-        ball.gameManager = this;
+        ball.transform.position = new Vector2(platform.platformTransform.position.x, platform.platformTransform.position.y+ platform.platformTransform.localScale.y/3);
+        if (!isNextBall)
+        {
+            ball.gameManager = this;
+        }
+        else ball.ballTrail.Clear();
         ball.gameObject.SetActive(true);
     }
 
@@ -85,7 +94,7 @@ public class GameManager : MonoBehaviour
                 //top left position (first in dictionary of positions)
                 if (i == 0 && j == 0)
                 {
-                    positionCoordinates = new Vector2(-horisScreenSize/2 + stepOfHorizontalPositions / 2, vertScreenSize/2 - stepOfVerticalPositions / 2- TopBorder.transform.localScale.y); //here is necessary some space from top border 
+                    positionCoordinates = new Vector2(-horisScreenSize/2 + stepOfHorizontalPositions / 2, vertScreenSize/2 - stepOfVerticalPositions - TopBorder.transform.localScale.y); //here is necessary some space from top border to UI elements
                 }
                 else if (j == 0)
                 {
@@ -103,7 +112,6 @@ public class GameManager : MonoBehaviour
 
         foreach (var coordinates in allPositionsForEnemies)
         {
-            gameObject.SetActive(false);
             ObjectPulledList = ObjectPuller.current.GetEnemyPullList();
             ObjectPulled = ObjectPuller.current.GetGameObjectFromPull(ObjectPulledList);
             ObjectPulled.transform.position = coordinates.Value;
@@ -124,9 +132,27 @@ public class GameManager : MonoBehaviour
     //called from platform script while player touches screen firs time
     public void startTheGame()
     {
+        //condition to check if game starts from the beginning
+        if (!availableBalls[0].activeInHierarchy)
+        {
+            for (int i = 0; i < availableBalls.Count; i++) availableBalls[i].SetActive(true);
+        }
         ball.startTheBall();
     }
 
+
+    public void reduceAvailableBalls() {
+        availableBalls[indexOfCurrentBall].SetActive(false);
+        if (indexOfCurrentBall > 0)
+        {
+            indexOfCurrentBall--;
+            activateTheBall(true);
+        }
+        else
+        {
+            Debug.Log("You Lose");
+        }
+    }
 
     // Update is called once per frame
     void Update()
