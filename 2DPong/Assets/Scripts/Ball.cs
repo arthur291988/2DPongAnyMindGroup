@@ -26,6 +26,9 @@ public class Ball : MonoBehaviour
     public List<GameObject> ObjectPulledList;
     [HideInInspector]
     public TrailRenderer ballTrail;
+    [HideInInspector]
+    public ParticleSystem megaBallEffect;
+
 
     private void OnEnable()
     {
@@ -35,6 +38,7 @@ public class Ball : MonoBehaviour
         ballTransform = transform;
         ballRigidbody = GetComponent<Rigidbody2D>();
         if (ballTrail == null) ballTrail = GetComponent<TrailRenderer>();
+        if (megaBallEffect == null) megaBallEffect = GetComponent<ParticleSystem>();
         //ball is steady on enable while it gets the command
         ballRigidbody.bodyType = RigidbodyType2D.Kinematic;
 
@@ -56,13 +60,14 @@ public class Ball : MonoBehaviour
         if (!win) gameManager.reduceAvailableBalls();
     }
 
-    //used to give breaking impulse to the ball so it can move in vertical direction if it was horizontal trap (when the y velocity is very low or zero)
-    IEnumerator breakeHorizontalTrap() {
+    //used to give breaking impulse to the ball so it can move in vertical direction if it was horizontal trap (when the Y axis velocity is very low or zero)
+    private IEnumerator breakeHorizontalTrap() {
         trapCheckInProcess = true; //used to prevent multiple calls for check
         yield return new WaitForSeconds(3);
         ballRigidbody.velocity = Vector2.zero; //clear velocity to prevent double impulse
-        if (ballRigidbody.velocity.y < 1 && ballRigidbody.velocity.y > -1)
+        if (ballRigidbody.velocity.y < 1.2f && ballRigidbody.velocity.y > -1.2f)
         {
+            ballBurstEffect();
             float yAxisVelocity = Random.Range(0, 2) == 0 ? 1 : -1;
             ballRigidbody.AddForce(new Vector2(Random.Range(-0.3f, 0.3f), yAxisVelocity) * startImpulseOfBall, ForceMode2D.Impulse);
             rotationSpeed = GameManager.current.BALL_ROTATION_SPEED;
@@ -89,7 +94,7 @@ public class Ball : MonoBehaviour
         //rotation speed of ball decreases with time 
         if (rotationSpeed > 500) rotationSpeed = Mathf.Lerp(rotationSpeed, 500,0.003f);
 
-        if (gameManager.gameIsOn && ballRigidbody.velocity.y < 1 && ballRigidbody.velocity.y > -1 && !trapCheckInProcess) breakeHorizontalTrap();
+        if (gameManager.gameIsOn && ballRigidbody.velocity.y < 1.2f && ballRigidbody.velocity.y > -1.2f && !trapCheckInProcess) StartCoroutine(breakeHorizontalTrap());
 
         if (ballTransform.position.y <= -gameManager.vertScreenSize / 2 && gameManager.gameIsOn) disactivateTheBall(false);
     }

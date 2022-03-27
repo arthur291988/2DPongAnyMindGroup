@@ -20,6 +20,8 @@ public class Enemy : MonoBehaviour
     public int enemyLevel;
     [HideInInspector]
     public int enemyHP;
+    [HideInInspector]
+    public Vector2 indexOfThisEnemy;
 
     private string enemyLevelString; // to cache the level of enemy 
 
@@ -60,15 +62,27 @@ public class Enemy : MonoBehaviour
 
     private void OnCollisionEnter2D(Collision2D collision)
     {
-        enemyHP--;
-        if (enemyHP < 1) disactivateEnemy(true); //argument is for using with back To Menu function
-        else {
-            ChengeTheSpriteOfEnemy(enemyLevelString + (enemyLevel-enemyHP).ToString());
+        if (collision.gameObject.TryGetComponent<Ball>(out Ball ball))
+        {
+            enemyHP--;
+            if (ball.megaBallEffect.isPlaying)
+            {
+                ball.megaBallEffect.Stop();
+                ObjectPulledList = ObjectPuller.current.GetballBurstEffectPullList();
+                ObjectPulled = ObjectPuller.current.GetGameObjectFromPull(ObjectPulledList);
+                ObjectPulled.transform.position = transform.position;
+                ObjectPulled.SetActive(true);
+
+            }
+            if (enemyHP < 1) disactivateEnemy(); //argument is for using with backToMenu function
+            else
+            {
+                ChengeTheSpriteOfEnemy(enemyLevelString + (enemyLevel - enemyHP).ToString());
+            }
         }
     }
 
-    private void disactivateEnemy(bool isDestroyed) {
-        if (isDestroyed) {
+    private void disactivateEnemy() {
             GameManager.current.allEnemies.Remove(gameObject);
             GameManager.current.checkIfWin();
             gameObject.SetActive(false);
@@ -78,7 +92,6 @@ public class Enemy : MonoBehaviour
             MainModule main = ObjectPulled.GetComponent<ParticleSystem>().main;
             main.startColor = colorOfEnemy;
             ObjectPulled.SetActive(true);
-        }
     }
 
     // Update is called once per frame

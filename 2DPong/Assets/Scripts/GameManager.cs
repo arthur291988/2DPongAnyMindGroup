@@ -35,8 +35,10 @@ public class GameManager : MonoBehaviour
     private const string YOU_WIN_TEXT = "You Win!";
     private const string GAME_OVER_TEXT = "Game Over";
 
-    private Dictionary<Vector2, Vector2> allPositionsForEnemies; //first is index of position, second is coordinates
-    public /*static*/ List<GameObject> allEnemies;
+    private Dictionary<Vector2, Vector2> allPositionsForEnemiesWithIndexes; //first is index of position, second is coordinates
+    [HideInInspector]
+    public Dictionary<Vector2, Enemy> allEnemiesWithPositionIndexes;
+    public List<GameObject> allEnemies;
 
 
     [HideInInspector]
@@ -52,6 +54,8 @@ public class GameManager : MonoBehaviour
     [SerializeField]
     private Text winLoseMessage;
 
+    [SerializeField]
+    private GameObject megaBonus;
 
     private void Awake()
     {
@@ -64,7 +68,8 @@ public class GameManager : MonoBehaviour
     {
         indexOfCurrentBall = 2;
         allEnemies = new List<GameObject>();
-        allPositionsForEnemies = new Dictionary<Vector2, Vector2>();
+        allPositionsForEnemiesWithIndexes = new Dictionary<Vector2, Vector2>();
+        allEnemiesWithPositionIndexes = new Dictionary<Vector2, Enemy>();
         gameIsOn = false;
         cameraOfGame = Camera.main;
         //determine the sizes of view screen
@@ -74,6 +79,8 @@ public class GameManager : MonoBehaviour
         activateThePlatform();
         activateTheBall(false);
         setTheEnemies();
+        StartCoroutine(startTheMegaBallTimer());
+        Debug.Log(LevelParameters.current.level1==null);
     }
 
     private void setTheBordersToScreenFrame()
@@ -124,29 +131,31 @@ public class GameManager : MonoBehaviour
                     positionCoordinates = new Vector2(positionCoordinates.x + stepOfHorizontalPositions, positionCoordinates.y);
                 }
 
-                allPositionsForEnemies.Add(new Vector2(i + 1, j + 1), positionCoordinates);
+                allPositionsForEnemiesWithIndexes.Add(new Vector2(i + 1, j + 1), positionCoordinates);
             }
-
         }
 
-        foreach (var coordinates in allPositionsForEnemies)
+        foreach (var coordinates in allPositionsForEnemiesWithIndexes)
         {
-            ObjectPulledList = ObjectPuller.current.GetEnemyPullList();
-            ObjectPulled = ObjectPuller.current.GetGameObjectFromPull(ObjectPulledList);
-            ObjectPulled.transform.position = coordinates.Value;
-            allEnemies.Add(ObjectPulled);
-            ObjectPulled.SetActive(true);
+            if (LevelParameters.current.level1.ContainsKey(coordinates.Key))
+            {
+                ObjectPulledList = ObjectPuller.current.GetEnemyPullList();
+                ObjectPulled = ObjectPuller.current.GetGameObjectFromPull(ObjectPulledList);
+                ObjectPulled.transform.position = coordinates.Value;
+                Enemy enemy = ObjectPulled.GetComponent<Enemy>();
+                enemy.enemyLevel = LevelParameters.current.level1[coordinates.Key];
+                enemy.indexOfThisEnemy = coordinates.Key;
+                allEnemiesWithPositionIndexes.Add(coordinates.Key, enemy);
+                allEnemies.Add(ObjectPulled);
+                ObjectPulled.SetActive(true);
+            }
         }
+    }
 
-        //for (int i =0;i< allPositionsForEnemies.Count;i++)
-        //{
-        //    gameObject.SetActive(false);
-        //    ObjectPulledList = ObjectPuller.current.GetDestroyEffectPullList();
-        //    ObjectPulled = ObjectPuller.current.GetGameObjectFromPull(ObjectPulledList);
-        //    ObjectPulled.transform.position = allPositionsForEnemies.Keys[i];
-        //    ObjectPulled.SetActive(true);
-        //}
-
+    private IEnumerator startTheMegaBallTimer() {
+        megaBonus.transform.position = new Vector2(Random.Range(-horisScreenSize/2+1, horisScreenSize / 2 - 1), vertScreenSize/2+1); //set mega bonus higher than scene and in randome point in horizontal axis
+        yield return new WaitForSeconds(Random.Range(15f,50f));
+        megaBonus.SetActive(true);
     }
 
     //called from platform script while player touches screen firs time
@@ -171,8 +180,9 @@ public class GameManager : MonoBehaviour
         else
         {
             gameIsOn = false;
-            winLosePanel.SetActive(true);
             winLoseMessage.text = GAME_OVER_TEXT;
+            foreach (GameObject enenmy in allEnemies) enenmy.SetActive(false);
+            winLosePanel.SetActive(true);
         }
     }
 
@@ -180,15 +190,10 @@ public class GameManager : MonoBehaviour
         if (allEnemies.Count < 1)
         {
             gameIsOn = false;
-            winLosePanel.SetActive(true);
             winLoseMessage.text = YOU_WIN_TEXT;
+            winLosePanel.SetActive(true);
             ball.disactivateTheBall(true);
         }
     }
 
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
 }
