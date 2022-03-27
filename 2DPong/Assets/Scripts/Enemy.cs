@@ -69,6 +69,8 @@ public class Enemy : MonoBehaviour
 
     private void disactivateEnemy(bool isDestroyed) {
         if (isDestroyed) {
+            GameManager.current.allEnemies.Remove(gameObject);
+            GameManager.current.checkIfWin();
             gameObject.SetActive(false);
             ObjectPulledList = ObjectPuller.current.GetDestroyEffectPullList();
             ObjectPulled = ObjectPuller.current.GetGameObjectFromPull(ObjectPulledList);

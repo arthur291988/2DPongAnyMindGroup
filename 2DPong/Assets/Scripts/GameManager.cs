@@ -1,11 +1,14 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class GameManager : MonoBehaviour
 {
     [HideInInspector]
     public Camera cameraOfGame;
+
+    public static GameManager current;
 
     [SerializeField]
     private GameObject LeftBorder;
@@ -25,12 +28,16 @@ public class GameManager : MonoBehaviour
     [HideInInspector]
     public float horisScreenSize;
 
+    private const float PLATFORM_DISTANCE_FROM_BOTTOM = 3;
+    public /*static*/ float BALL_ROTATION_SPEED = 2000;
     private const int VERTICAL_ENEMY_MAX_COUNT = 6;
     private const int HORIZONTAL_ENEMY_MAX_COUNT = 4;
-    private Dictionary<Vector2, Vector2> allPositionsForEnemies; //first is index of position, second is coordinates
+    private const string YOU_WIN_TEXT = "You Win!";
+    private const string GAME_OVER_TEXT = "Game Over";
 
-    private const float PLATFORM_DISTANCE_FROM_BOTTOM = 3;
-    public static float BALL_ROTATION_SPEED = 2000;
+    private Dictionary<Vector2, Vector2> allPositionsForEnemies; //first is index of position, second is coordinates
+    public /*static*/ List<GameObject> allEnemies;
+
 
     [HideInInspector]
     public GameObject ObjectPulled;
@@ -41,10 +48,22 @@ public class GameManager : MonoBehaviour
     private List<GameObject> availableBalls;
     private int indexOfCurrentBall;
 
-    // Start is called before the first frame update
-    void Start()
+    public GameObject winLosePanel;
+    [SerializeField]
+    private Text winLoseMessage;
+
+
+    private void Awake()
+    {
+        //creating static instance to call some properties and functions from outside directly
+        current = this;
+    }
+
+        // Start is called before the first frame update
+        void Start()
     {
         indexOfCurrentBall = 2;
+        allEnemies = new List<GameObject>();
         allPositionsForEnemies = new Dictionary<Vector2, Vector2>();
         gameIsOn = false;
         cameraOfGame = Camera.main;
@@ -115,6 +134,7 @@ public class GameManager : MonoBehaviour
             ObjectPulledList = ObjectPuller.current.GetEnemyPullList();
             ObjectPulled = ObjectPuller.current.GetGameObjectFromPull(ObjectPulledList);
             ObjectPulled.transform.position = coordinates.Value;
+            allEnemies.Add(ObjectPulled);
             ObjectPulled.SetActive(true);
         }
 
@@ -150,7 +170,19 @@ public class GameManager : MonoBehaviour
         }
         else
         {
-            Debug.Log("You Lose");
+            gameIsOn = false;
+            winLosePanel.SetActive(true);
+            winLoseMessage.text = GAME_OVER_TEXT;
+        }
+    }
+
+    public void checkIfWin() {
+        if (allEnemies.Count < 1)
+        {
+            gameIsOn = false;
+            winLosePanel.SetActive(true);
+            winLoseMessage.text = YOU_WIN_TEXT;
+            ball.disactivateTheBall(true);
         }
     }
 

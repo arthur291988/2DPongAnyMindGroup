@@ -37,33 +37,33 @@ public class Platform : MonoBehaviour
             Vector2 velosityOfBall = ball.ballRigidbody.velocity;
             ball.ballRigidbody.velocity = Vector2.zero;
             ball.ballRigidbody.AddForce(new Vector2(ballHitPlatformXPoint, 1).normalized * velosityOfBall.magnitude, ForceMode2D.Impulse);
-            ball.rotationSpeed = GameManager.BALL_ROTATION_SPEED;
+            ball.rotationSpeed = GameManager.current.BALL_ROTATION_SPEED;
         }
     }
 
-    private void FixedUpdate()
+
+    private void Update()
     {
         if (Input.GetMouseButton(0))
         {
             //moving the platform with touch/mouse position if it is held down/touched
-            platformTransform.position = new Vector3 (cameraOfGame.ScreenToWorldPoint(Input.mousePosition).x, yPositionOfPlatform, 0);
+            platformTransform.position = new Vector3(cameraOfGame.ScreenToWorldPoint(Input.mousePosition).x, yPositionOfPlatform, 0);
 
             //holding the platform inside the screen borders
             if (platformTransform.position.x < leftBorderForPlatform) platformTransform.position = new Vector2(leftBorderForPlatform, yPositionOfPlatform);
             if (platformTransform.position.x > rightBorderForPlatform) platformTransform.position = new Vector2(rightBorderForPlatform, yPositionOfPlatform);
 
-            if (!gameManager.gameIsOn) gameManager.ball.ballTransform.position = new Vector2(platformTransform.position.x, platformTransform.position.y + platformTransform.localScale.y / 3);
+            if (!gameManager.gameIsOn && !gameManager.winLosePanel.activeInHierarchy) gameManager.ball.ballTransform.position = new Vector2(platformTransform.position.x, platformTransform.position.y + platformTransform.localScale.y / 3);
         }
         if (Input.GetMouseButtonDown(0))
-        { 
+        {
             //if game is not started, it will here
-            if (!gameManager.gameIsOn)
+            if (!gameManager.gameIsOn && !gameManager.winLosePanel.activeInHierarchy)
             {
                 gameManager.gameIsOn = true;
                 gameManager.startTheGame();
             }
         }
-        
     }
 
 }

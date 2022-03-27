@@ -44,7 +44,7 @@ public class Ball : MonoBehaviour
     {
         ballRigidbody.bodyType = RigidbodyType2D.Dynamic;
         ballRigidbody.AddForce(new Vector2(Random.Range(-0.3f,0.3f),1) * startImpulseOfBall, ForceMode2D.Impulse);
-        rotationSpeed = GameManager.BALL_ROTATION_SPEED;
+        rotationSpeed = GameManager.current.BALL_ROTATION_SPEED;
     }
 
     public void disactivateTheBall(bool win)
@@ -65,7 +65,7 @@ public class Ball : MonoBehaviour
         {
             float yAxisVelocity = Random.Range(0, 2) == 0 ? 1 : -1;
             ballRigidbody.AddForce(new Vector2(Random.Range(-0.3f, 0.3f), yAxisVelocity) * startImpulseOfBall, ForceMode2D.Impulse);
-            rotationSpeed = GameManager.BALL_ROTATION_SPEED;
+            rotationSpeed = GameManager.current.BALL_ROTATION_SPEED;
         }
         trapCheckInProcess = false;
     }
