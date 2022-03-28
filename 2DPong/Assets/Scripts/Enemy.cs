@@ -46,7 +46,7 @@ public class Enemy : MonoBehaviour
         spriteRenderer =GetComponent<SpriteRenderer>();
         enemyHP = enemyLevel;
         enemyLevelString = enemyLevel.ToString();
-        ChengeTheSpriteOfEnemy(enemyLevelString);
+        changeTheSpriteOfEnemy(enemyLevelString);
         if (enemyLevel == 1) colorOfEnemy = new Color(0.2f,0.2f,0.2f,1); //dark enemy Color
         if (enemyLevel == 2) colorOfEnemy = new Color(0, 0.4f, 0.65f, 1); //blue enemy Color
         if (enemyLevel == 3) colorOfEnemy = new Color(0.65f, 0, 0.1f, 1); //red enemy Color
@@ -55,7 +55,7 @@ public class Enemy : MonoBehaviour
     }
 
 
-    public void ChengeTheSpriteOfEnemy(string newSprite)
+    public void changeTheSpriteOfEnemy(string newSprite)
     {
         spriteRenderer.sprite = spriteAtlas.GetSprite(newSprite);
     }
@@ -73,6 +73,7 @@ public class Enemy : MonoBehaviour
                 ObjectPulled = ObjectPuller.current.GetGameObjectFromPull(ObjectPulledList);
                 ObjectPulled.transform.position = positionOfThisEnenmy;
                 ObjectPulled.SetActive(true);
+                enemyHP = 1; //mega ball destroys enemy in one hit
             }
             reduceHPOfEnenmy(false);
         }
@@ -101,9 +102,6 @@ public class Enemy : MonoBehaviour
     public void reduceHPOfEnenmy(bool megaHit)
     {
         enemyHP--;
-        GameManager.current.enemiesDestroyedInOneAir++;
-        GameManager.current.incrementScoreBasis();
-        GameManager.current.countTheScore();
         if (megaHit)
         {
             ObjectPulledList = ObjectPuller.current.GetballBurstEffectPullList();
@@ -111,10 +109,15 @@ public class Enemy : MonoBehaviour
             ObjectPulled.transform.position = transform.position;
             ObjectPulled.SetActive(true);
         }
+        if (enemyHP > 0) GameManager.current.ninjaOuchSound.Play();
+        GameManager.current.enemiesDestroyedInOneAir++;
+        GameManager.current.incrementScoreBasis();
+        GameManager.current.countTheScore();
+        
         if (enemyHP < 1) disactivateEnemy(); //argument is for using with backToMenu function
         else
         {
-            ChengeTheSpriteOfEnemy(enemyLevelString + (enemyLevel - enemyHP).ToString());
+            changeTheSpriteOfEnemy(enemyLevelString + (enemyLevel - enemyHP).ToString());
         }
     }
 
@@ -127,7 +130,7 @@ public class Enemy : MonoBehaviour
         Vector2 indexShif = Vector2.right;
         for (int i = 0; i < 4; i++)
         {
-            if (i > 1) indexShif = Vector2.up;
+            if (i == 2) indexShif = Vector2.up;
             if (GameManager.current.allEnemiesWithPositionIndexes.ContainsKey(indexOfThisEnemy + indexShif)) nearEnemyIndexes.Add(indexOfThisEnemy + indexShif);
             indexShif *= -1;
         }
@@ -135,6 +138,7 @@ public class Enemy : MonoBehaviour
 
     private void disactivateEnemy()
     {
+        GameManager.current.ninjaDestroySound.Play();
         GameManager.current.allEnemiesWithPositionIndexes.Remove(indexOfThisEnemy);
         if (enemyLevel == 2) GameManager.current.all2LevelEnemies.Remove(this);
         else if (enemyLevel == 3) GameManager.current.all3LevelEnemies.Remove(this);

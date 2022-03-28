@@ -46,6 +46,7 @@ public class Platform : MonoBehaviour
     {
         if (collision.gameObject.TryGetComponent<Ball>(out Ball ball)) {
 
+            gameManager.surikenSound.Play();
             //transfer mega ball effect to the ball
             if (megaBallEffect.isPlaying && !isParalized)
             {
@@ -68,7 +69,11 @@ public class Platform : MonoBehaviour
             ballHitPlatformXPoint = ball.ballTransform.position.x - platformTransform.position.x;
             Vector2 velosityOfBall = ball.ballRigidbody.velocity;
             ball.ballRigidbody.velocity = Vector2.zero;
-            ball.ballRigidbody.AddForce(new Vector2(ballHitPlatformXPoint, 1).normalized * velosityOfBall.magnitude, ForceMode2D.Impulse);
+
+            //if ball moves slower than start impulse it will get start impulse after hit the platform
+            if (velosityOfBall.magnitude < ball.startImpulseOfBall) ball.ballRigidbody.AddForce(new Vector2(ballHitPlatformXPoint, 1).normalized * ball.startImpulseOfBall, ForceMode2D.Impulse);
+            else ball.ballRigidbody.AddForce(new Vector2(ballHitPlatformXPoint, 1).normalized * velosityOfBall.magnitude, ForceMode2D.Impulse);
+
             ball.rotationSpeed = gameManager.ballRotationSpeed;
         }
         else if (collision.gameObject.TryGetComponent<EnemyBall>(out EnemyBall enenmyBall))
@@ -76,6 +81,7 @@ public class Platform : MonoBehaviour
             if (!isParalized)
             {
                 enenmyBall.gameObject.SetActive(false);
+                gameManager.iceEffectSound.Play();
                 StartCoroutine(paralisedTime());
             }
         }
@@ -98,6 +104,7 @@ public class Platform : MonoBehaviour
         {
             main.startColor = Color.yellow;
             megaBallEffect.Play();
+            gameManager.megaBallSound.Play();
             megaBonus.gameObject.SetActive(false);
         }
     }
@@ -122,8 +129,9 @@ public class Platform : MonoBehaviour
             //if game is not started, it will here
             if (!gameManager.gameIsOn )
             {
+                gameManager.surikenSound.Play();
                 gameManager.gameIsOn = true;
-                gameManager.startTheGame();
+                gameManager.ball.startTheBall();
             }
         }
     }

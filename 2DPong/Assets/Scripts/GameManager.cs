@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.U2D;
 
 public class GameManager : MonoBehaviour
 {
@@ -32,6 +33,7 @@ public class GameManager : MonoBehaviour
     [HideInInspector]
     public bool gameIsOn;
     private int currentLevel;
+    private int achievedLevel;
 
     private const float PLATFORM_DISTANCE_FROM_BOTTOM = 3;
     [HideInInspector]
@@ -58,6 +60,8 @@ public class GameManager : MonoBehaviour
     public List<Enemy> all2LevelEnemies;
 
     [SerializeField]
+    private GameObject availableBallsPanel;
+    [SerializeField]
     private List<GameObject> availableBalls;
     private int indexOfCurrentBall;
 
@@ -67,6 +71,8 @@ public class GameManager : MonoBehaviour
     private const string YOU_WIN_TEXT = "You Win!";
     private const string GAME_OVER_TEXT = "Game Over";
 
+    [SerializeField]
+    private GameObject scoreTitle;
     [SerializeField]
     private Text scoreText;
     private int scoreCount;
@@ -87,6 +93,25 @@ public class GameManager : MonoBehaviour
     [SerializeField]
     private GameObject megaBall;
 
+    [SerializeField]
+    private GameObject levelsPanel;
+    [SerializeField]
+    private List<Levels> LevelIconsClasses;
+    private string MenuBackGround = "0";
+    private string Level12BackGroundNameInAtlas = "1";
+    private string Level34BackGroundNameInAtlas = "2";
+    private string Level56BackGroundNameInAtlas = "3";
+    [SerializeField]
+    private SpriteAtlas spriteAtlasOfBackgrounds;
+    [SerializeField]
+    private Image backgroundImage;
+
+    public AudioSource surikenSound;
+    public AudioSource ninjaOuchSound;
+    public AudioSource ninjaDestroySound;
+    public AudioSource megaBallSound;
+    public AudioSource iceEffectSound;
+    public AudioSource gameEndSound;
 
     private void Awake()
     {
@@ -98,6 +123,7 @@ public class GameManager : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        achievedLevel = 0;
         indexOfCurrentBall = 2;
         all3LevelEnemies = new List<Enemy>();
         all2LevelEnemies = new List<Enemy>();
@@ -108,12 +134,11 @@ public class GameManager : MonoBehaviour
         //determine the sizes of view screen
         vertScreenSize = cameraOfGame.orthographicSize * 2;
         horisScreenSize = vertScreenSize * Screen.width / Screen.height;
+        changeTheSpriteOfBackground(MenuBackGround);
+        LoadData();
         setTheBordersToScreenFrame();
-        activateThePlatform();
         setAllEnemyPositions();
-        startTheLevel(3); //TO CALL FROM BUTTON
-        activateTheBall(false);
-        StartCoroutine(startTheMegaBallTimer());
+        levelsPanel.SetActive(true);
     }
 
     private void setTheBordersToScreenFrame()
@@ -178,7 +203,8 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    private void setTheEnemies(int level) {
+    private void setTheEnemies(int level)
+    {
         foreach (var coordinates in allPositionsForEnemiesWithIndexes)
         {
             if (LevelParameters.allLevels[level].ContainsKey(coordinates.Key))
@@ -190,8 +216,8 @@ public class GameManager : MonoBehaviour
                 enemy.enemyLevel = LevelParameters.allLevels[level][coordinates.Key];
                 enemy.indexOfThisEnemy = coordinates.Key;
                 allEnemiesWithPositionIndexes.Add(coordinates.Key, enemy);
-                if (enemy.enemyLevel==2) all2LevelEnemies.Add(enemy);
-                if (enemy.enemyLevel==3) all3LevelEnemies.Add(enemy);
+                if (enemy.enemyLevel == 2) all2LevelEnemies.Add(enemy);
+                if (enemy.enemyLevel == 3) all3LevelEnemies.Add(enemy);
                 ObjectPulled.SetActive(true);
             }
         }
@@ -204,10 +230,15 @@ public class GameManager : MonoBehaviour
     }
 
 
-    private void startTheLevel(int level)
+    public void startTheLevel(int level)
     {
+        if (level > 4) changeTheSpriteOfBackground(Level56BackGroundNameInAtlas);
+        else if (level > 2) changeTheSpriteOfBackground(Level34BackGroundNameInAtlas);
+        else changeTheSpriteOfBackground(Level12BackGroundNameInAtlas);
+        indexOfCurrentBall = 2;
+        for (int i = 0; i < availableBalls.Count; i++) if (!availableBalls[i].activeInHierarchy) availableBalls[i].SetActive(true);
         currentLevel = level;
-        ballMoveSpeed = level > 5 ? BALL_MOVE_SPEED_3_LEVEL : level > 2 ? BALL_MOVE_SPEED_2_LEVEL : BALL_MOVE_SPEED_1_LEVEL;
+        ballMoveSpeed = level > 4 ? BALL_MOVE_SPEED_3_LEVEL : level > 2 ? BALL_MOVE_SPEED_2_LEVEL : BALL_MOVE_SPEED_1_LEVEL;
         allEnemiesWithPositionIndexes.Clear();
         all2LevelEnemies.Clear();
         all3LevelEnemies.Clear();
@@ -215,38 +246,48 @@ public class GameManager : MonoBehaviour
         scoreBasis = DEFAULT_SCORE_BASIS;
         enemiesDestroyedInOneAir = 0;
         scoreText.text = scoreCount.ToString();
+        activateThePlatform();
+        activateTheBall(false);
+        StartCoroutine(startTheMegaBallTimer());
         setTheEnemies(level);
+        baseAchievementScoreOfLevel = 0;
         foreach (var enenmy in allEnemiesWithPositionIndexes)
         {
             baseAchievementScoreOfLevel += DEFAULT_SCORE_BASIS * enenmy.Value.enemyLevel;
         }
+        if (levelsPanel.activeInHierarchy) levelsPanel.SetActive(false);
+        scoreTitle.SetActive(true);
+        availableBallsPanel.SetActive(true);
     }
-
-    //called from platform script while player touches screen firs time
-    public void startTheGame()
+    public void restartTheGameButton()
     {
-        //condition to check if game starts from the beginning
-        if (!availableBalls[0].activeInHierarchy)
-        {
-            for (int i = 0; i < availableBalls.Count; i++) availableBalls[i].SetActive(true);
-        }
-        ball.startTheBall();
+        winLosePanel.SetActive(false);
+        startTheLevel(currentLevel);
     }
 
-    public void goToMenuButton() {
+    public void goToMenuButton()
+    {
         for (int i = 0; i < achievementTokens.Count; i++)
         {
             achievementTokens[i].GetComponent<RawImage>().color = new Color(achievementTokensColorR, 0, 0, 0.2f);
             achievementTokens[i].SetActive(false);
         }
         winLosePanel.SetActive(false);
+        platform.disactivatePlatorm();
+        levelsPanel.SetActive(true);
+        changeTheSpriteOfBackground(MenuBackGround);
+        scoreTitle.SetActive(false);
+        availableBallsPanel.SetActive(false);
     }
 
-    public void restartTheGameButton() {
-        startTheLevel(currentLevel);
+    public void changeTheSpriteOfBackground(string newSprite)
+    {
+        backgroundImage.sprite = spriteAtlasOfBackgrounds.GetSprite(newSprite);
     }
 
-    public void countTheScore() {
+
+    public void countTheScore()
+    {
         scoreCount += scoreBasis;
         scoreText.text = scoreCount.ToString();
     }
@@ -261,7 +302,7 @@ public class GameManager : MonoBehaviour
         scoreBasis = DEFAULT_SCORE_BASIS;
     }
 
-    public void enemyAttacks ()
+    public void enemyAttacks()
     {
         //pick one enenmy to attack the player
 
@@ -270,13 +311,15 @@ public class GameManager : MonoBehaviour
             if (all3LevelEnemies.Count == 1) all3LevelEnemies[0].attackWithBall();
             else all3LevelEnemies[Random.Range(0, all3LevelEnemies.Count)].attackWithBall();
         }
-        else if (all2LevelEnemies.Count > 0) {
+        else if (all2LevelEnemies.Count > 0)
+        {
             if (all2LevelEnemies.Count == 1) all2LevelEnemies[0].attackWithBall();
             else all2LevelEnemies[Random.Range(0, all2LevelEnemies.Count)].attackWithBall();
         }
     }
 
-    public void reduceAvailableBalls() {
+    public void reduceAvailableBallsAndCheckTheLost()
+    {
         availableBalls[indexOfCurrentBall].SetActive(false);
         if (indexOfCurrentBall > 0)
         {
@@ -289,26 +332,66 @@ public class GameManager : MonoBehaviour
             winLoseMessage.text = GAME_OVER_TEXT;
             foreach (var enenmy in allEnemiesWithPositionIndexes) enenmy.Value.gameObject.SetActive(false);
             winLosePanel.SetActive(true);
+            gameEndSound.Play();
         }
     }
 
-    public void checkIfWin() {
+    public void checkIfWin()
+    {
         if (allEnemiesWithPositionIndexes.Count < 1)
         {
             gameIsOn = false;
             winLoseMessage.text = YOU_WIN_TEXT;
             winLosePanel.SetActive(true);
             int achievementsCount = 0;
-            if (scoreCount > baseAchievementScoreOfLevel * 2) achievementsCount = 3;
-            else if (scoreCount > baseAchievementScoreOfLevel * 1.5f) achievementsCount = 2;
+            if (scoreCount > baseAchievementScoreOfLevel * 1.6f) achievementsCount = 3;
+            else if (scoreCount > baseAchievementScoreOfLevel * 1.3f) achievementsCount = 2;
             else achievementsCount = 1;
             for (int i = 0; i < achievementTokens.Count; i++)
             {
                 if (i < achievementsCount) achievementTokens[i].GetComponent<RawImage>().color = new Color(achievementTokensColorR, 0, 0, 1);
                 achievementTokens[i].SetActive(true);
             }
-
+            if (currentLevel > achievedLevel) achievedLevel = currentLevel;
+            LevelIconsClasses[currentLevel - 1].achievementsScore = achievementsCount;
+            LevelIconsClasses[currentLevel - 1].setAchievements();
+            LevelIconsClasses[currentLevel - 1].setHighScore(scoreCount);
+            //setting active the level that next after achieved one  
+            if (achievedLevel < LevelIconsClasses.Count) if (!LevelIconsClasses[achievedLevel].button.interactable) LevelIconsClasses[achievedLevel].button.interactable = true; 
             ball.disactivateTheBall(true);
+            gameEndSound.Play();
+        }
+    }
+
+    private void OnApplicationQuit()
+    {
+        saveTheData();
+    }
+
+    private void saveTheData()
+    {
+        PlayerPrefs.SetInt("achievedLevel", achievedLevel);
+        for (int i = 0; i < achievedLevel; i++)
+        {
+            PlayerPrefs.SetInt("higScore" + i, LevelIconsClasses[i].highScore);
+            PlayerPrefs.SetInt("achievementsScore" + i, LevelIconsClasses[i].achievementsScore);
+        }
+    }
+    private void LoadData()
+    {
+        achievedLevel = PlayerPrefs.GetInt("achievedLevel", 0);
+        for (int i = 0; i < achievedLevel; i++)
+        {
+            LevelIconsClasses[i].highScore = PlayerPrefs.GetInt("higScore" + i, 0);
+            LevelIconsClasses[i].achievementsScore = PlayerPrefs.GetInt("achievementsScore" + i, 0);
+            LevelIconsClasses[i].setAchievements();
+            LevelIconsClasses[i].setHighScore(LevelIconsClasses[i].highScore);
+            LevelIconsClasses[i].button.interactable = true;
+        }
+        //setting active the level that next after achieved one  
+        if (achievedLevel < LevelIconsClasses.Count)
+        {
+            if (!LevelIconsClasses[achievedLevel].button.interactable) LevelIconsClasses[achievedLevel].button.interactable = true;
         }
     }
 

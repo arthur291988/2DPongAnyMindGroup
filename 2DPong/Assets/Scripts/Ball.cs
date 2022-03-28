@@ -53,7 +53,11 @@ public class Ball : MonoBehaviour
         ballRigidbody.bodyType = RigidbodyType2D.Kinematic;
         gameObject.SetActive(false);
         gameManager.gameIsOn = false;
-        if (!win) gameManager.reduceAvailableBalls();
+        if (!win)
+        {
+            gameManager.megaBallSound.Play();
+            gameManager.reduceAvailableBallsAndCheckTheLost();
+        }
         if (gameManager.platform.megaBallEffect.isPlaying) gameManager.platform.megaBallEffect.Stop();
     }
 
@@ -64,13 +68,14 @@ public class Ball : MonoBehaviour
         rotationSpeed = gameManager.ballRotationSpeed;
     }
 
-    private void breakeHorizontalTrap()
+    private void breakeHorizontalTrapAndVelocitySlowDown()
     {
         ballBurstEffect();
         float yAxisVelocity = Random.Range(0, 2) == 0 ? 1 : -1;
         ballRigidbody.velocity = Vector2.zero; //clear velocity to prevent double impulse
         ballRigidbody.AddForce(new Vector2(Random.Range(-0.3f, 0.3f), yAxisVelocity) * startImpulseOfBall, ForceMode2D.Impulse);
         rotationSpeed = gameManager.ballRotationSpeed;
+        gameManager.megaBallSound.Play();
         trapCheckTimer = 5;
     }
 
@@ -80,8 +85,19 @@ public class Ball : MonoBehaviour
         ObjectPulled.transform.position = transform.position;
         ObjectPulled.SetActive(true);
     }
+    private void OnCollisionEnter2D(Collision2D collision)
+    {
+        if (collision.gameObject.TryGetComponent<EnemyBall>(out EnemyBall enenmyBall))
+        {
+            gameManager.surikenSound.Play();
+            if (megaBallEffect.isPlaying) {
+                megaBallEffect.Clear();
+                megaBallEffect.Stop();
+            }
+        }
+    }
 
-    private void FixedUpdate()
+        private void FixedUpdate()
     {
         if (gameManager.gameIsOn) ballRigidbody.MoveRotation(ballRigidbody.rotation - rotationSpeed * Time.fixedDeltaTime);
     }
@@ -92,10 +108,11 @@ public class Ball : MonoBehaviour
         //rotation speed of ball decreases with time 
         if (rotationSpeed > 500) rotationSpeed = Mathf.Lerp(rotationSpeed, 500,0.003f);
 
-        if (gameManager.gameIsOn && ballRigidbody.velocity.y < MIN_VERTICAL_ANGLE && ballRigidbody.velocity.y > -MIN_VERTICAL_ANGLE) {
+        //monitoring the velocity reduce of ball or horisontal trap
+        if ((gameManager.gameIsOn && ballRigidbody.velocity.y < MIN_VERTICAL_ANGLE && ballRigidbody.velocity.y > -MIN_VERTICAL_ANGLE) || ballRigidbody.velocity.magnitude < startImpulseOfBall) {
             trapCheckTimer -= Time.deltaTime;
             if (trapCheckTimer < 0) {
-                breakeHorizontalTrap();
+                breakeHorizontalTrapAndVelocitySlowDown();
             }
         }
         else if (trapCheckTimer < 5) trapCheckTimer = 5;
