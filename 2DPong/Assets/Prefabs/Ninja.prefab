@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 7312400386988546985}
   - component: {fileID: 8383804029155122208}
   - component: {fileID: -7248460091223352473}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Ninja
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -141,6 +141,6 @@ MonoBehaviour:
   spriteAtlas: {fileID: 4343727234628468602, guid: ddcdc83634d5b1c41a01e38b04d6242d, type: 2}
   enemyLevel: 0
   enemyHP: 0
+  indexOfThisEnemy: {x: 0, y: 0}
   ObjectPulled: {fileID: 0}
   ObjectPulledList: []
-  startImpulseOfBall: 0

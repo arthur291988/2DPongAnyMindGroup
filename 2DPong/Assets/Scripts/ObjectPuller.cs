@@ -18,6 +18,8 @@ public class ObjectPuller : MonoBehaviour
     private GameObject destroyEffect;
     [SerializeField]
     private GameObject enemy;
+    [SerializeField]
+    private GameObject enemyBall;
 
     [HideInInspector]
     public List<GameObject> ballBurstEffectPull;
@@ -25,6 +27,8 @@ public class ObjectPuller : MonoBehaviour
     public List<GameObject> destroyEffectPull;
     [HideInInspector]
     public List<GameObject> enemyPull;
+    [HideInInspector]
+    public List<GameObject> enemyBallPull;
 
 
 
@@ -39,6 +43,7 @@ public class ObjectPuller : MonoBehaviour
         ballBurstEffectPull = new List<GameObject>();
         destroyEffectPull = new List<GameObject>();
         enemyPull = new List<GameObject>();
+        enemyBallPull = new List<GameObject>();
 
         for (int i = 0; i < pullOfObjects2; i++)
         {
@@ -51,6 +56,11 @@ public class ObjectPuller : MonoBehaviour
             GameObject obj = (GameObject)Instantiate(destroyEffect);
             obj.SetActive(false);
             destroyEffectPull.Add(obj);
+
+            GameObject obj1 = (GameObject)Instantiate(enemyBall);
+            obj1.SetActive(false);
+            enemyBallPull.Add(obj1);
+            
         }
         for (int i = 0; i < pullOfObjects35; i++)
         {
@@ -70,6 +80,10 @@ public class ObjectPuller : MonoBehaviour
     public List<GameObject> GetEnemyPullList()
     {
         return enemyPull;
+    }
+    public List<GameObject> GetEnemyBallPullList()
+    {
+        return enemyBallPull;
     }
 
     //universal method to set active proper game object from the list of GOs, it just needs to get correct List of game objects

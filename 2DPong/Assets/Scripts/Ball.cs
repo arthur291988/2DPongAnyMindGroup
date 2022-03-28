@@ -18,7 +18,10 @@ public class Ball : MonoBehaviour
     public GameManager gameManager;
 
     private bool trapCheckInProcess;
+    private float trapCheckTimer;
 
+    //is used to release the ball from horisontal trap
+    private const float MIN_VERTICAL_ANGLE = 1.3f;
 
     [HideInInspector]
     public GameObject ObjectPulled;
@@ -32,47 +35,43 @@ public class Ball : MonoBehaviour
 
     private void OnEnable()
     {
+        trapCheckTimer = 5;
         trapCheckInProcess = false; 
         rotationSpeed = 0;
-        startImpulseOfBall = 10; 
+        startImpulseOfBall = gameManager.ballMoveSpeed; 
         ballTransform = transform;
         ballRigidbody = GetComponent<Rigidbody2D>();
         if (ballTrail == null) ballTrail = GetComponent<TrailRenderer>();
         if (megaBallEffect == null) megaBallEffect = GetComponent<ParticleSystem>();
         //ball is steady on enable while it gets the command
         ballRigidbody.bodyType = RigidbodyType2D.Kinematic;
+    }
 
+    public void disactivateTheBall(bool win)
+    {
+        ballBurstEffect();
+        ballRigidbody.bodyType = RigidbodyType2D.Kinematic;
+        gameObject.SetActive(false);
+        gameManager.gameIsOn = false;
+        if (!win) gameManager.reduceAvailableBalls();
+        if (gameManager.platform.megaBallEffect.isPlaying) gameManager.platform.megaBallEffect.Stop();
     }
 
     public void startTheBall()
     {
         ballRigidbody.bodyType = RigidbodyType2D.Dynamic;
         ballRigidbody.AddForce(new Vector2(Random.Range(-0.3f,0.3f),1) * startImpulseOfBall, ForceMode2D.Impulse);
-        rotationSpeed = GameManager.current.BALL_ROTATION_SPEED;
+        rotationSpeed = gameManager.ballRotationSpeed;
     }
 
-    public void disactivateTheBall(bool win)
+    private void breakeHorizontalTrap()
     {
         ballBurstEffect();
-        ballRigidbody.bodyType = RigidbodyType2D.Kinematic; 
-        gameObject.SetActive(false);
-        gameManager.gameIsOn = false;
-        if (!win) gameManager.reduceAvailableBalls();
-    }
-
-    //used to give breaking impulse to the ball so it can move in vertical direction if it was horizontal trap (when the Y axis velocity is very low or zero)
-    private IEnumerator breakeHorizontalTrap() {
-        trapCheckInProcess = true; //used to prevent multiple calls for check
-        yield return new WaitForSeconds(3);
+        float yAxisVelocity = Random.Range(0, 2) == 0 ? 1 : -1;
         ballRigidbody.velocity = Vector2.zero; //clear velocity to prevent double impulse
-        if (ballRigidbody.velocity.y < 1.2f && ballRigidbody.velocity.y > -1.2f)
-        {
-            ballBurstEffect();
-            float yAxisVelocity = Random.Range(0, 2) == 0 ? 1 : -1;
-            ballRigidbody.AddForce(new Vector2(Random.Range(-0.3f, 0.3f), yAxisVelocity) * startImpulseOfBall, ForceMode2D.Impulse);
-            rotationSpeed = GameManager.current.BALL_ROTATION_SPEED;
-        }
-        trapCheckInProcess = false;
+        ballRigidbody.AddForce(new Vector2(Random.Range(-0.3f, 0.3f), yAxisVelocity) * startImpulseOfBall, ForceMode2D.Impulse);
+        rotationSpeed = gameManager.ballRotationSpeed;
+        trapCheckTimer = 5;
     }
 
     private void ballBurstEffect() {
@@ -90,11 +89,17 @@ public class Ball : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        Debug.Log(ballRigidbody.velocity.y);
         //rotation speed of ball decreases with time 
         if (rotationSpeed > 500) rotationSpeed = Mathf.Lerp(rotationSpeed, 500,0.003f);
 
-        if (gameManager.gameIsOn && ballRigidbody.velocity.y < 1.2f && ballRigidbody.velocity.y > -1.2f && !trapCheckInProcess) StartCoroutine(breakeHorizontalTrap());
+        if (gameManager.gameIsOn && ballRigidbody.velocity.y < MIN_VERTICAL_ANGLE && ballRigidbody.velocity.y > -MIN_VERTICAL_ANGLE) {
+            trapCheckTimer -= Time.deltaTime;
+            if (trapCheckTimer < 0) {
+                breakeHorizontalTrap();
+            }
+        }
+        else if (trapCheckTimer < 5) trapCheckTimer = 5;
+
 
         if (ballTransform.position.y <= -gameManager.vertScreenSize / 2 && gameManager.gameIsOn) disactivateTheBall(false);
     }

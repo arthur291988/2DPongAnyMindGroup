@@ -1,5 +1,6 @@
-
+using System.Collections;
 using UnityEngine;
+using static UnityEngine.ParticleSystem;
 
 public class Platform : MonoBehaviour
 {
@@ -12,33 +13,54 @@ public class Platform : MonoBehaviour
     public float leftBorderForPlatform;
     public float rightBorderForPlatform;
     private float ballHitPlatformXPoint;
+    [HideInInspector]
     public GameManager gameManager;
     [HideInInspector]
     public ParticleSystem megaBallEffect;
+    private MainModule main;
+    [HideInInspector]
+    public bool isParalized;
 
-
+    private int enemyAttackGap;
 
     private void OnEnable()
     {
-        cameraOfGame = Camera.main;
-        platformTransform = transform;
+        if (cameraOfGame==null) cameraOfGame = Camera.main;
+        if (platformTransform==null) platformTransform = transform;
         yPositionOfPlatform = platformTransform.position.y;
         if (megaBallEffect == null) megaBallEffect = GetComponent<ParticleSystem>();
-        //fixing the movemet limit points on X axis for platform
-        //leftBorderForPlatform = -GameManager.horisScreenSize/2  + platformTransform.localScale.x/2;
-        //rightBorderForPlatform = GameManager.horisScreenSize/2  - platformTransform.localScale.x/2;
+        main = megaBallEffect.main;
     }
 
+    public void disactivatePlatorm()
+    {
+        isParalized = false;
+        StopCoroutine(paralisedTime());
+        megaBallEffect.Clear();
+        megaBallEffect.Stop();
+        gameObject.SetActive(false);
+        enemyAttackGap = 0;
+    }
 
     private void OnCollisionEnter2D(Collision2D collision)
     {
         if (collision.gameObject.TryGetComponent<Ball>(out Ball ball)) {
 
             //transfer mega ball effect to the ball
-            if (megaBallEffect.isPlaying)
+            if (megaBallEffect.isPlaying && !isParalized)
             {
                 ball.megaBallEffect.Play();
                 megaBallEffect.Stop();
+            }
+                gameManager.resetScoreBasis();
+
+
+            enemyAttackGap++;
+            if (enemyAttackGap > 2)
+            {
+                enemyAttackGap = 0;
+                //each time player ball hits the platform, the enemy attacks
+                gameManager.enemyAttacks();
             }
 
             //this value will determine if ball will move left or right depending to wich side of platform it hits
@@ -47,24 +69,44 @@ public class Platform : MonoBehaviour
             Vector2 velosityOfBall = ball.ballRigidbody.velocity;
             ball.ballRigidbody.velocity = Vector2.zero;
             ball.ballRigidbody.AddForce(new Vector2(ballHitPlatformXPoint, 1).normalized * velosityOfBall.magnitude, ForceMode2D.Impulse);
-            ball.rotationSpeed = GameManager.current.BALL_ROTATION_SPEED;
+            ball.rotationSpeed = gameManager.ballRotationSpeed;
         }
-        
+        else if (collision.gameObject.TryGetComponent<EnemyBall>(out EnemyBall enenmyBall))
+        {
+            if (!isParalized)
+            {
+                enenmyBall.gameObject.SetActive(false);
+                StartCoroutine(paralisedTime());
+            }
+        }
+    }
+
+    IEnumerator paralisedTime()
+    {
+        isParalized = true;
+        main.startColor = Color.blue;
+        megaBallEffect.Play();
+        yield return new WaitForSeconds(3);
+        megaBallEffect.Clear();
+        megaBallEffect.Stop();
+        isParalized = false;
     }
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
         if (collision.gameObject.TryGetComponent<MegaBonus>(out MegaBonus megaBonus))
         {
+            main.startColor = Color.yellow;
             megaBallEffect.Play();
             megaBonus.gameObject.SetActive(false);
         }
     }
 
 
+
     private void Update()
     {
-        if (Input.GetMouseButton(0) && !gameManager.winLosePanel.activeInHierarchy)
+        if (Input.GetMouseButton(0) && !gameManager.winLosePanel.activeInHierarchy && !isParalized)
         {
             //moving the platform with touch/mouse position if it is held down/touched
             platformTransform.position = new Vector3(cameraOfGame.ScreenToWorldPoint(Input.mousePosition).x, yPositionOfPlatform, 0);
