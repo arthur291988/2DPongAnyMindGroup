@@ -12,6 +12,7 @@ public class MegaBonus : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        //just falling after spawn and deactivated after gets the bottom of screen
         megaBonusTransform.Translate(new Vector2(0,-10f)*Time.deltaTime, Space.World);
         if (megaBonusTransform.position.y < -GameManager.current.vertScreenSize / 2 - 1) gameObject.SetActive(false);
     }

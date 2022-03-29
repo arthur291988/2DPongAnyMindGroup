@@ -389,7 +389,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: eb00878d3bad0be43bad397846e67920, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 920873054c48f4642bc1b80a9bc05aa9, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -1197,7 +1197,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: d602b294a93583641b512cf55ff77787, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 181aa4504b89eba4fa3392d50dcd16ab, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -1245,7 +1245,6 @@ GameObject:
   m_Component:
   - component: {fileID: 377577346}
   - component: {fileID: 377577348}
-  - component: {fileID: 377577350}
   - component: {fileID: 377577349}
   m_Layer: 3
   m_Name: BallsAvailable
@@ -1315,32 +1314,6 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
---- !u!114 &377577350
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 377577345}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 30649d3a9faa99c48a7b1166b86bf2a0, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_Padding:
-    m_Left: 0
-    m_Right: 0
-    m_Top: 0
-    m_Bottom: 0
-  m_ChildAlignment: 4
-  m_Spacing: 0
-  m_ChildForceExpandWidth: 1
-  m_ChildForceExpandHeight: 1
-  m_ChildControlWidth: 0
-  m_ChildControlHeight: 0
-  m_ChildScaleWidth: 0
-  m_ChildScaleHeight: 0
-  m_ReverseArrangement: 0
 --- !u!1 &513006585
 GameObject:
   m_ObjectHideFlags: 0
@@ -2369,7 +2342,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: a926e34ae56ee8647adeea936dfcefba, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 27cca3860235fa3468d39ab08d874bca, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -3095,9 +3068,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   ballTransform: {fileID: 0}
   ballRigidbody: {fileID: 0}
+  gameManager: {fileID: 0}
   startImpulseOfBall: 0
   rotationSpeed: 0
-  gameManager: {fileID: 0}
   ObjectPulled: {fileID: 0}
   ObjectPulledList: []
   ballTrail: {fileID: 0}
@@ -9123,6 +9096,7 @@ MonoBehaviour:
   - {fileID: 545442982}
   - {fileID: 1707984969}
   megaBall: {fileID: 2540353734193635252}
+  megaBallTransform: {fileID: 0}
   levelsPanel: {fileID: 1240098705}
   LevelIconsClasses:
   - {fileID: 1504495472}
@@ -9735,7 +9709,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: d602b294a93583641b512cf55ff77787, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 181aa4504b89eba4fa3392d50dcd16ab, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -10179,7 +10153,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 27.333334, y: -25}
+  m_AnchoredPosition: {x: 137, y: -25}
   m_SizeDelta: {x: 40, y: 40}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1556896980
@@ -10252,7 +10226,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 136.66667, y: -25}
+  m_AnchoredPosition: {x: 28, y: -25}
   m_SizeDelta: {x: 40, y: 40}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1577145067
@@ -10494,9 +10468,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   platformTransform: {fileID: 0}
+  gameManager: {fileID: 0}
   leftBorderForPlatform: 0
   rightBorderForPlatform: 0
-  gameManager: {fileID: 0}
   megaBallEffect: {fileID: 0}
   isParalized: 0
 --- !u!61 &1584143308
@@ -15846,7 +15820,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: a926e34ae56ee8647adeea936dfcefba, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 27cca3860235fa3468d39ab08d874bca, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -16316,7 +16290,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: eb00878d3bad0be43bad397846e67920, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 920873054c48f4642bc1b80a9bc05aa9, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -17343,7 +17317,7 @@ ParticleSystem:
   ShapeModule:
     serializedVersion: 6
     enabled: 1
-    type: 10
+    type: 0
     angle: 25
     length: 5
     boxThickness: {x: 0, y: 0, z: 0}
@@ -17488,7 +17462,7 @@ ParticleSystem:
           m_RotationOrder: 4
     arc:
       value: 360
-      mode: 0
+      mode: 1
       spread: 0
       speed:
         serializedVersion: 2
@@ -17987,17 +17961,17 @@ ParticleSystem:
       maxColor: {r: 1, g: 1, b: 1, a: 1}
       maxGradient:
         serializedVersion: 2
-        key0: {r: 1, g: 0.7526022, b: 0, a: 1}
-        key1: {r: 1, g: 0.36163163, b: 0, a: 1}
-        key2: {r: 0, g: 0, b: 0, a: 0}
+        key0: {r: 1, g: 0, b: 0.6533694, a: 1}
+        key1: {r: 1, g: 0.7737833, b: 0, a: 1}
+        key2: {r: 1, g: 0.7737833, b: 0, a: 0}
         key3: {r: 0, g: 0, b: 0, a: 0}
         key4: {r: 0, g: 0, b: 0, a: 0}
         key5: {r: 0, g: 0, b: 0, a: 0}
         key6: {r: 0, g: 0, b: 0, a: 0}
         key7: {r: 0, g: 0, b: 0, a: 0}
-        ctime0: 0
-        ctime1: 33153
-        ctime2: 0
+        ctime0: 13300
+        ctime1: 31997
+        ctime2: 31997
         ctime3: 0
         ctime4: 0
         ctime5: 0
@@ -18437,7 +18411,7 @@ ParticleSystem:
     orbitalZ:
       serializedVersion: 2
       minMaxState: 0
-      scalar: 3
+      scalar: -3
       minScalar: 0
       maxCurve:
         serializedVersion: 2
@@ -18649,7 +18623,7 @@ ParticleSystem:
     radial:
       serializedVersion: 2
       minMaxState: 0
-      scalar: 1
+      scalar: 3
       minScalar: 0
       maxCurve:
         serializedVersion: 2
@@ -18702,7 +18676,7 @@ ParticleSystem:
     speedModifier:
       serializedVersion: 2
       minMaxState: 0
-      scalar: 1
+      scalar: 0.5
       minScalar: 1
       maxCurve:
         serializedVersion: 2
@@ -21444,7 +21418,7 @@ ParticleSystemRenderer:
   m_RendererPriority: 0
   m_Materials:
   - {fileID: 10308, guid: 0000000000000000f000000000000000, type: 0}
-  - {fileID: 10308, guid: 0000000000000000f000000000000000, type: 0}
+  - {fileID: 10301, guid: 0000000000000000f000000000000000, type: 0}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -21523,7 +21497,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2540353734193635252}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: -40, z: 0}
   m_LocalScale: {x: 0.7, y: 0.7, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []

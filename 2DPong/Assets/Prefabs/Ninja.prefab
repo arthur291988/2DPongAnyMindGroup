@@ -138,7 +138,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   ballTransform: {fileID: 0}
   enemyRigidbody: {fileID: 0}
-  spriteAtlas: {fileID: 4343727234628468602, guid: ddcdc83634d5b1c41a01e38b04d6242d, type: 2}
+  enemyTypesSprites: {fileID: 4343727234628468602, guid: ddcdc83634d5b1c41a01e38b04d6242d, type: 2}
   enemyLevel: 0
   enemyHP: 0
   indexOfThisEnemy: {x: 0, y: 0}

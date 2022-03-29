@@ -13,8 +13,9 @@ public class Enemy : MonoBehaviour
     private ParticleSystem destroyEffect;
 
     [SerializeField]
-    private SpriteAtlas spriteAtlas;
-    private SpriteRenderer spriteRenderer;
+    private SpriteAtlas enemyTypesSprites;
+    private SpriteRenderer enemySpriteRenderer;
+    private Color colorOfEnemy;
 
     [HideInInspector]
     public int enemyLevel;
@@ -23,117 +24,27 @@ public class Enemy : MonoBehaviour
     [HideInInspector]
     public Vector2 indexOfThisEnemy;
     private List<Vector2> nearEnemyIndexes;
-    private Vector2 positionOfThisEnenmy;
+    private Vector2 positionOfThisEnemy;
 
     private string enemyLevelString; // to cache the level of enemy 
-
-    private string EnemyLevel1 = "1";
-    private string EnemyLevel2 = "2";
-    private string EnemyLevel21 = "21"; //enenmy level 1 with one hit
-    private string EnemyLevel3 = "3";
-    private string EnemyLevel31 = "31"; //enenmy level 2 with one hit
-    private string EnemyLevel32 = "32";//enenmy level 2 with two hits
 
     [HideInInspector]
     public GameObject ObjectPulled;
     [HideInInspector]
     public List<GameObject> ObjectPulledList;
 
-    private Color colorOfEnemy;
 
     private void OnEnable()
     {
-        spriteRenderer =GetComponent<SpriteRenderer>();
+        enemySpriteRenderer = GetComponent<SpriteRenderer>();
         enemyHP = enemyLevel;
         enemyLevelString = enemyLevel.ToString();
         changeTheSpriteOfEnemy(enemyLevelString);
-        if (enemyLevel == 1) colorOfEnemy = new Color(0.2f,0.2f,0.2f,1); //dark enemy Color
+        if (enemyLevel == 1) colorOfEnemy = new Color(0.2f, 0.2f, 0.2f, 1); //dark enemy Color
         if (enemyLevel == 2) colorOfEnemy = new Color(0, 0.4f, 0.65f, 1); //blue enemy Color
         if (enemyLevel == 3) colorOfEnemy = new Color(0.65f, 0, 0.1f, 1); //red enemy Color
         nearEnemyIndexes = new List<Vector2>();
-        positionOfThisEnenmy = transform.position;
-    }
-
-
-    public void changeTheSpriteOfEnemy(string newSprite)
-    {
-        spriteRenderer.sprite = spriteAtlas.GetSprite(newSprite);
-    }
-
-    private void OnCollisionEnter2D(Collision2D collision)
-    {
-        if (collision.gameObject.TryGetComponent<Ball>(out Ball ball))
-        {
-            if (ball.megaBallEffect.isPlaying)
-            {
-                ball.megaBallEffect.Clear();
-                ball.megaBallEffect.Stop();
-                megaHitProcessing();
-                ObjectPulledList = ObjectPuller.current.GetballBurstEffectPullList();
-                ObjectPulled = ObjectPuller.current.GetGameObjectFromPull(ObjectPulledList);
-                ObjectPulled.transform.position = positionOfThisEnenmy;
-                ObjectPulled.SetActive(true);
-                enemyHP = 1; //mega ball destroys enemy in one hit
-            }
-            reduceHPOfEnenmy(false);
-        }
-    }
-
-    public void attackWithBall() {
-        ObjectPulledList = ObjectPuller.current.GetEnemyBallPullList();
-        ObjectPulled = ObjectPuller.current.GetGameObjectFromPull(ObjectPulledList);
-        ObjectPulled.transform.position = positionOfThisEnenmy;
-        ObjectPulled.GetComponent<TrailRenderer>().Clear();
-        ObjectPulled.SetActive(true);
-        float xAxisVelocity = Random.Range(0, 2) == 0 ? 1 : -1;
-        ObjectPulled.GetComponent<Rigidbody2D>().AddForce(new Vector2(xAxisVelocity, -1) * GameManager.current.ballMoveSpeed, ForceMode2D.Impulse);
-
-        //second throw can make only 3-rd level enemy and towards platform
-        if (enemyLevel > 2) {
-            ObjectPulledList = ObjectPuller.current.GetEnemyBallPullList();
-            ObjectPulled = ObjectPuller.current.GetGameObjectFromPull(ObjectPulledList);
-            ObjectPulled.transform.position = positionOfThisEnenmy;
-            ObjectPulled.GetComponent<TrailRenderer>().Clear();
-            ObjectPulled.SetActive(true);
-            ObjectPulled.GetComponent<Rigidbody2D>().AddForce(((Vector2)GameManager.current.platform.platformTransform.position - positionOfThisEnenmy).normalized * GameManager.current.ballMoveSpeed, ForceMode2D.Impulse);
-        }
-    }
-
-    public void reduceHPOfEnenmy(bool megaHit)
-    {
-        enemyHP--;
-        if (megaHit)
-        {
-            ObjectPulledList = ObjectPuller.current.GetballBurstEffectPullList();
-            ObjectPulled = ObjectPuller.current.GetGameObjectFromPull(ObjectPulledList);
-            ObjectPulled.transform.position = transform.position;
-            ObjectPulled.SetActive(true);
-        }
-        if (enemyHP > 0) GameManager.current.ninjaOuchSound.Play();
-        GameManager.current.enemiesDestroyedInOneAir++;
-        GameManager.current.incrementScoreBasis();
-        GameManager.current.countTheScore();
-        
-        if (enemyHP < 1) disactivateEnemy(); //argument is for using with backToMenu function
-        else
-        {
-            changeTheSpriteOfEnemy(enemyLevelString + (enemyLevel - enemyHP).ToString());
-        }
-    }
-
-    private void megaHitProcessing() {
-        foreach (Vector2 index in nearEnemyIndexes) 
-            if (GameManager.current.allEnemiesWithPositionIndexes.ContainsKey(index)&&GameManager.current.allEnemiesWithPositionIndexes[index].isActiveAndEnabled) GameManager.current.allEnemiesWithPositionIndexes[index].reduceHPOfEnenmy(true);
-    }
-
-    public void fixNearEnemiesInList() {
-        Vector2 indexShif = Vector2.right;
-        for (int i = 0; i < 4; i++)
-        {
-            if (i == 2) indexShif = Vector2.up;
-            if (GameManager.current.allEnemiesWithPositionIndexes.ContainsKey(indexOfThisEnemy + indexShif)) nearEnemyIndexes.Add(indexOfThisEnemy + indexShif);
-            indexShif *= -1;
-        }
+        positionOfThisEnemy = transform.position;
     }
 
     private void disactivateEnemy()
@@ -147,15 +58,97 @@ public class Enemy : MonoBehaviour
         gameObject.SetActive(false);
         ObjectPulledList = ObjectPuller.current.GetDestroyEffectPullList();
         ObjectPulled = ObjectPuller.current.GetGameObjectFromPull(ObjectPulledList);
-        ObjectPulled.transform.position = transform.position;
+        ObjectPulled.transform.position = positionOfThisEnemy;
         MainModule main = ObjectPulled.GetComponent<ParticleSystem>().main;
         main.startColor = colorOfEnemy;
         ObjectPulled.SetActive(true);
     }
 
-    // Update is called once per frame
-    void Update()
+
+    public void changeTheSpriteOfEnemy(string newSprite)
     {
-        
+        enemySpriteRenderer.sprite = enemyTypesSprites.GetSprite(newSprite);
     }
+
+    //get references to enemies that stay in one step from up, down, right, left of this enemy. To hit them all with mega ball effect 
+    public void fixNearEnemiesInList()
+    {
+        Vector2 indexShif = Vector2.right;
+        for (int i = 0; i < 4; i++)
+        {
+            if (i == 2) indexShif = Vector2.up;
+            if (GameManager.current.allEnemiesWithPositionIndexes.ContainsKey(indexOfThisEnemy + indexShif)) nearEnemyIndexes.Add(indexOfThisEnemy + indexShif);
+            indexShif *= -1;
+        }
+    }
+
+    private void OnCollisionEnter2D(Collision2D collision)
+    {
+        if (collision.gameObject.TryGetComponent<Ball>(out Ball ball))
+        {
+            if (ball.megaBallEffect.isPlaying)
+            {
+                ball.megaBallEffect.Clear();
+                ball.megaBallEffect.Stop();
+                megaHitProcessing();
+                ObjectPulledList = ObjectPuller.current.GetballBurstEffectPullList();
+                ObjectPulled = ObjectPuller.current.GetGameObjectFromPull(ObjectPulledList);
+                ObjectPulled.transform.position = positionOfThisEnemy;
+                ObjectPulled.SetActive(true);
+                enemyHP = 1; //mega ball destroys enemy in one hit
+            }
+            reduceHPOfEnenmy(false);
+        }
+    }
+
+    public void attackWithBall()
+    {
+        ObjectPulledList = ObjectPuller.current.GetEnemyBallPullList();
+        ObjectPulled = ObjectPuller.current.GetGameObjectFromPull(ObjectPulledList);
+        ObjectPulled.transform.position = positionOfThisEnemy;
+        ObjectPulled.GetComponent<TrailRenderer>().Clear();
+        ObjectPulled.SetActive(true);
+        float xAxisVelocity = Random.Range(0, 2) == 0 ? 1 : -1;
+        ObjectPulled.GetComponent<Rigidbody2D>().AddForce(new Vector2(xAxisVelocity, -1) * GameManager.current.ballMoveSpeed, ForceMode2D.Impulse);
+
+        //second throw can make only 3-rd level enemy and towards platform
+        if (enemyLevel > 2)
+        {
+            ObjectPulledList = ObjectPuller.current.GetEnemyBallPullList();
+            ObjectPulled = ObjectPuller.current.GetGameObjectFromPull(ObjectPulledList);
+            ObjectPulled.transform.position = positionOfThisEnemy;
+            ObjectPulled.GetComponent<TrailRenderer>().Clear();
+            ObjectPulled.SetActive(true);
+            ObjectPulled.GetComponent<Rigidbody2D>().AddForce(((Vector2)GameManager.current.platform.platformTransform.position - positionOfThisEnemy).normalized * GameManager.current.ballMoveSpeed, ForceMode2D.Impulse);
+        }
+    }
+
+    public void reduceHPOfEnenmy(bool megaHit)
+    {
+        enemyHP--;
+        if (megaHit)
+        {
+            ObjectPulledList = ObjectPuller.current.GetballBurstEffectPullList();
+            ObjectPulled = ObjectPuller.current.GetGameObjectFromPull(ObjectPulledList);
+            ObjectPulled.transform.position = positionOfThisEnemy;
+            ObjectPulled.SetActive(true);
+        }
+        if (enemyHP > 0) GameManager.current.ninjaOuchSound.Play();
+        GameManager.current.enemiesDestroyedInOneAir++;
+        GameManager.current.incrementScoreBasis();
+        GameManager.current.countTheScore();
+
+        if (enemyHP < 1) disactivateEnemy(); //argument is for using with backToMenu function
+        else
+        {
+            changeTheSpriteOfEnemy(enemyLevelString + (enemyLevel - enemyHP).ToString());
+        }
+    }
+
+    private void megaHitProcessing()
+    {
+        foreach (Vector2 index in nearEnemyIndexes)
+            if (GameManager.current.allEnemiesWithPositionIndexes.ContainsKey(index) && GameManager.current.allEnemiesWithPositionIndexes[index].isActiveAndEnabled) GameManager.current.allEnemiesWithPositionIndexes[index].reduceHPOfEnenmy(true);
+    }
+
 }

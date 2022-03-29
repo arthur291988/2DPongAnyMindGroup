@@ -80,7 +80,7 @@ public class GameManager : MonoBehaviour
     public int scoreBasis;
     [HideInInspector]
     public int enemiesDestroyedInOneAir;
-    private const int DOUBLE_SCORE_CONDITION = 2;
+    private const int DOUBLE_SCORE_CONDITION = 1;
     private const int TRIPLE_SCORE_CONDITION = 4;
     private const int DEFAULT_SCORE_BASIS = 2;
     private const int DOUBLE_SCORE = 4;
@@ -92,6 +92,8 @@ public class GameManager : MonoBehaviour
 
     [SerializeField]
     private GameObject megaBall;
+    [HideInInspector]
+    public Transform megaBallTransform;
 
     [SerializeField]
     private GameObject levelsPanel;
@@ -131,9 +133,12 @@ public class GameManager : MonoBehaviour
         allEnemiesWithPositionIndexes = new Dictionary<Vector2, Enemy>();
         gameIsOn = false;
         cameraOfGame = Camera.main;
+        megaBallTransform = megaBall.transform;
+
         //determine the sizes of view screen
         vertScreenSize = cameraOfGame.orthographicSize * 2;
         horisScreenSize = vertScreenSize * Screen.width / Screen.height;
+
         changeTheSpriteOfBackground(MenuBackGround);
         LoadData();
         setTheBordersToScreenFrame();
@@ -141,40 +146,8 @@ public class GameManager : MonoBehaviour
         levelsPanel.SetActive(true);
     }
 
-    private void setTheBordersToScreenFrame()
-    {
-        LeftBorder.transform.position = new Vector2(-horisScreenSize / 2, 0);
-        RightBorder.transform.position = new Vector2(horisScreenSize / 2, 0);
-        TopBorder.transform.position = new Vector2(0, vertScreenSize / 2);
-    }
-
-    private void activateThePlatform()
-    {
-        platform.gameManager = this;
-        platform.transform.position = new Vector2(0, -vertScreenSize / 2 + platform.transform.localScale.y / 2 + PLATFORM_DISTANCE_FROM_BOTTOM);
-        platform.leftBorderForPlatform = -horisScreenSize / 2 + LeftBorder.transform.localScale.x / 2 + platform.transform.localScale.x / 2;
-        platform.rightBorderForPlatform = horisScreenSize / 2 - RightBorder.transform.localScale.x / 2 - platform.transform.localScale.x / 2;
-        platform.gameObject.SetActive(true);
-    }
-
-    private void activateTheBall(bool isNextBall)
-    {
-        ball.transform.position = new Vector2(platform.platformTransform.position.x, platform.platformTransform.position.y + platform.platformTransform.localScale.y / 3);
-        if (!isNextBall)
-        {
-            ball.gameManager = this;
-        }
-        else ball.ballTrail.Clear();
-        ball.gameObject.SetActive(true);
-    }
-    private IEnumerator startTheMegaBallTimer()
-    {
-        megaBall.transform.position = new Vector2(Random.Range(-horisScreenSize / 2 + 1, horisScreenSize / 2 - 1), vertScreenSize / 2 + 1); //set mega bonus higher than scene and in randome point in horizontal axis
-        yield return new WaitForSeconds(Random.Range(6f, 20f));
-        megaBall.SetActive(true);
-    }
-
     //called only once while start of application
+    #region 
     private void setAllEnemyPositions()
     {
         float stepOfHorizontalPositions = horisScreenSize / HORIZONTAL_ENEMY_MAX_COUNT;
@@ -200,6 +173,74 @@ public class GameManager : MonoBehaviour
 
                 allPositionsForEnemiesWithIndexes.Add(new Vector2(i + 1, j + 1), positionCoordinates);
             }
+        }
+    }
+
+    private void setTheBordersToScreenFrame()
+    {
+        LeftBorder.transform.position = new Vector2(-horisScreenSize / 2, 0);
+        RightBorder.transform.position = new Vector2(horisScreenSize / 2, 0);
+        TopBorder.transform.position = new Vector2(0, vertScreenSize / 2);
+    }
+    #endregion
+
+    //game start functions
+    #region
+    public void startTheLevel(int level)
+    {
+        if (level > 4) changeTheSpriteOfBackground(Level56BackGroundNameInAtlas);
+        else if (level > 2) changeTheSpriteOfBackground(Level34BackGroundNameInAtlas);
+        else changeTheSpriteOfBackground(Level12BackGroundNameInAtlas);
+        indexOfCurrentBall = 2;
+        for (int i = 0; i < availableBalls.Count; i++) if (!availableBalls[i].activeInHierarchy) availableBalls[i].SetActive(true);
+        currentLevel = level;
+        ballMoveSpeed = level > 4 ? BALL_MOVE_SPEED_3_LEVEL : level > 2 ? BALL_MOVE_SPEED_2_LEVEL : BALL_MOVE_SPEED_1_LEVEL;
+        allEnemiesWithPositionIndexes.Clear();
+        all2LevelEnemies.Clear();
+        all3LevelEnemies.Clear();
+        scoreCount = 0;
+        scoreBasis = DEFAULT_SCORE_BASIS;
+        enemiesDestroyedInOneAir = 0;
+        scoreText.text = scoreCount.ToString();
+        activateThePlatform();
+        activateTheBall(false);
+        setTheEnemies(level);
+        baseAchievementScoreOfLevel = 0;
+        foreach (var enenmy in allEnemiesWithPositionIndexes)
+        {
+            baseAchievementScoreOfLevel += DEFAULT_SCORE_BASIS * enenmy.Value.enemyLevel;
+        }
+        if (levelsPanel.activeInHierarchy) levelsPanel.SetActive(false);
+        scoreTitle.SetActive(true);
+        availableBallsPanel.SetActive(true);
+    }
+
+    private void activateThePlatform()
+    {
+        platform.gameManager = this;
+        platform.transform.position = new Vector2(0, -vertScreenSize / 2 + platform.transform.localScale.y / 2 + PLATFORM_DISTANCE_FROM_BOTTOM);
+        platform.leftBorderForPlatform = -horisScreenSize / 2 + LeftBorder.transform.localScale.x / 2 + platform.transform.localScale.x / 2;
+        platform.rightBorderForPlatform = horisScreenSize / 2 - RightBorder.transform.localScale.x / 2 - platform.transform.localScale.x / 2;
+        platform.gameObject.SetActive(true);
+    }
+
+    private void activateTheBall(bool isNextBall)
+    {
+        ball.transform.position = new Vector2(platform.platformTransform.position.x, platform.platformTransform.position.y + platform.platformTransform.localScale.y / 3);
+        if (!isNextBall)
+        {
+            ball.gameManager = this;
+        }
+        else ball.ballTrail.Clear();
+        ball.gameObject.SetActive(true);
+    }
+    public IEnumerator startTheMegaBallTimer()
+    {
+        yield return new WaitForSeconds(Random.Range(6f, 20f));
+        if (!megaBall.activeInHierarchy && gameIsOn)
+        {
+            megaBallTransform.position = new Vector2(Random.Range(-horisScreenSize / 2 + 1, horisScreenSize / 2 - 1), vertScreenSize / 2 + 1); //set mega bonus higher than scene and in randome point in horizontal axis
+            megaBall.SetActive(true);
         }
     }
 
@@ -229,63 +270,15 @@ public class GameManager : MonoBehaviour
         }
     }
 
-
-    public void startTheLevel(int level)
-    {
-        if (level > 4) changeTheSpriteOfBackground(Level56BackGroundNameInAtlas);
-        else if (level > 2) changeTheSpriteOfBackground(Level34BackGroundNameInAtlas);
-        else changeTheSpriteOfBackground(Level12BackGroundNameInAtlas);
-        indexOfCurrentBall = 2;
-        for (int i = 0; i < availableBalls.Count; i++) if (!availableBalls[i].activeInHierarchy) availableBalls[i].SetActive(true);
-        currentLevel = level;
-        ballMoveSpeed = level > 4 ? BALL_MOVE_SPEED_3_LEVEL : level > 2 ? BALL_MOVE_SPEED_2_LEVEL : BALL_MOVE_SPEED_1_LEVEL;
-        allEnemiesWithPositionIndexes.Clear();
-        all2LevelEnemies.Clear();
-        all3LevelEnemies.Clear();
-        scoreCount = 0;
-        scoreBasis = DEFAULT_SCORE_BASIS;
-        enemiesDestroyedInOneAir = 0;
-        scoreText.text = scoreCount.ToString();
-        activateThePlatform();
-        activateTheBall(false);
-        StartCoroutine(startTheMegaBallTimer());
-        setTheEnemies(level);
-        baseAchievementScoreOfLevel = 0;
-        foreach (var enenmy in allEnemiesWithPositionIndexes)
-        {
-            baseAchievementScoreOfLevel += DEFAULT_SCORE_BASIS * enenmy.Value.enemyLevel;
-        }
-        if (levelsPanel.activeInHierarchy) levelsPanel.SetActive(false);
-        scoreTitle.SetActive(true);
-        availableBallsPanel.SetActive(true);
-    }
-    public void restartTheGameButton()
-    {
-        winLosePanel.SetActive(false);
-        startTheLevel(currentLevel);
-    }
-
-    public void goToMenuButton()
-    {
-        for (int i = 0; i < achievementTokens.Count; i++)
-        {
-            achievementTokens[i].GetComponent<RawImage>().color = new Color(achievementTokensColorR, 0, 0, 0.2f);
-            achievementTokens[i].SetActive(false);
-        }
-        winLosePanel.SetActive(false);
-        platform.disactivatePlatorm();
-        levelsPanel.SetActive(true);
-        changeTheSpriteOfBackground(MenuBackGround);
-        scoreTitle.SetActive(false);
-        availableBallsPanel.SetActive(false);
-    }
-
     public void changeTheSpriteOfBackground(string newSprite)
     {
         backgroundImage.sprite = spriteAtlasOfBackgrounds.GetSprite(newSprite);
     }
+    #endregion
 
 
+    //game process functions
+    #region
     public void countTheScore()
     {
         scoreCount += scoreBasis;
@@ -329,6 +322,7 @@ public class GameManager : MonoBehaviour
         else
         {
             gameIsOn = false;
+            if (megaBall.activeInHierarchy) megaBall.SetActive(false);
             winLoseMessage.text = GAME_OVER_TEXT;
             foreach (var enenmy in allEnemiesWithPositionIndexes) enenmy.Value.gameObject.SetActive(false);
             winLosePanel.SetActive(true);
@@ -340,29 +334,76 @@ public class GameManager : MonoBehaviour
     {
         if (allEnemiesWithPositionIndexes.Count < 1)
         {
+            calculateTheAchievements();
             gameIsOn = false;
+            if (megaBall.activeInHierarchy) megaBall.SetActive(false);
             winLoseMessage.text = YOU_WIN_TEXT;
             winLosePanel.SetActive(true);
-            int achievementsCount = 0;
-            if (scoreCount > baseAchievementScoreOfLevel * 1.6f) achievementsCount = 3;
-            else if (scoreCount > baseAchievementScoreOfLevel * 1.3f) achievementsCount = 2;
-            else achievementsCount = 1;
-            for (int i = 0; i < achievementTokens.Count; i++)
-            {
-                if (i < achievementsCount) achievementTokens[i].GetComponent<RawImage>().color = new Color(achievementTokensColorR, 0, 0, 1);
-                achievementTokens[i].SetActive(true);
-            }
-            if (currentLevel > achievedLevel) achievedLevel = currentLevel;
-            LevelIconsClasses[currentLevel - 1].achievementsScore = achievementsCount;
-            LevelIconsClasses[currentLevel - 1].setAchievements();
-            LevelIconsClasses[currentLevel - 1].setHighScore(scoreCount);
-            //setting active the level that next after achieved one  
-            if (achievedLevel < LevelIconsClasses.Count) if (!LevelIconsClasses[achievedLevel].button.interactable) LevelIconsClasses[achievedLevel].button.interactable = true; 
             ball.disactivateTheBall(true);
             gameEndSound.Play();
         }
     }
+    #endregion
 
+
+    //game end functions
+    #region
+
+    //achievements appear a moment later after palyer wins to reload the frame when checkIfWin function is called
+    private void calculateTheAchievements()
+    {
+        int achievementsCount = 0;
+        if (scoreCount > baseAchievementScoreOfLevel * 1.6f) achievementsCount = 3;
+        else if (scoreCount > baseAchievementScoreOfLevel * 1.3f) achievementsCount = 2;
+        else achievementsCount = 1;
+        for (int i = 0; i < achievementTokens.Count; i++)
+        {
+            if (i < achievementsCount) achievementTokens[i].GetComponent<RawImage>().color = new Color(achievementTokensColorR, 0, 0, 1);
+            achievementTokens[i].SetActive(true);
+        }
+        if (currentLevel > achievedLevel) achievedLevel = currentLevel;
+        LevelIconsClasses[currentLevel - 1].achievementsScore = achievementsCount;
+        LevelIconsClasses[currentLevel - 1].setAchievements();
+        LevelIconsClasses[currentLevel - 1].setHighScore(scoreCount);
+        //setting active the level that next after achieved one  
+        if (achievedLevel < LevelIconsClasses.Count) if (!LevelIconsClasses[achievedLevel].button.interactable) LevelIconsClasses[achievedLevel].button.interactable = true;
+    }
+    public void restartTheGameButton()
+    {
+        for (int i = 0; i < achievementTokens.Count; i++)
+        {
+            achievementTokens[i].GetComponent<RawImage>().color = new Color(achievementTokensColorR, 0, 0, 0.2f);
+            achievementTokens[i].SetActive(false);
+        }
+        winLosePanel.SetActive(false);
+        startTheLevel(currentLevel);
+    }
+
+    public void goToMenuButton()
+    {
+        for (int i = 0; i < achievementTokens.Count; i++)
+        {
+            achievementTokens[i].GetComponent<RawImage>().color = new Color(achievementTokensColorR, 0, 0, 0.2f);
+            achievementTokens[i].SetActive(false);
+        }
+        winLosePanel.SetActive(false);
+        platform.disactivatePlatorm();
+        levelsPanel.SetActive(true);
+        changeTheSpriteOfBackground(MenuBackGround);
+        scoreTitle.SetActive(false);
+        availableBallsPanel.SetActive(false);
+    }
+
+    #endregion
+
+
+    //saving the data of game while quitting the game(from mobile platform)
+    private void OnApplicationPause(bool pause)
+    {
+        if (pause) saveTheData();
+    }
+
+    //for UNITY editor
     private void OnApplicationQuit()
     {
         saveTheData();

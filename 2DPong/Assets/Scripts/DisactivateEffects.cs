@@ -3,9 +3,11 @@ using UnityEngine;
 
 public class DisactivateEffects : MonoBehaviour
 {
+    //disactivates any effect prefab after it was pulled from Object Puller
+
+
     private void OnEnable()
     {
-        if (GetComponent<AudioSource>()) GetComponent<AudioSource>().Play(0);
         Invoke("setFalseGameObj", 1);
     }
 

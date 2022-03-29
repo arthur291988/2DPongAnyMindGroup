@@ -4,6 +4,7 @@ using UnityEngine;
 
 public class LevelParameters : MonoBehaviour
 {
+    //position indexes of enemies on game scene board, with the levels of enemies
     public static Dictionary<Vector2, int> level1 = new Dictionary<Vector2, int>
     {
         [new Vector2(1, 1)] = 1,
@@ -55,8 +56,7 @@ public class LevelParameters : MonoBehaviour
 
         [new Vector2(6, 2)] = 1,
         [new Vector2(6, 3)] = 1,
-    }; 
-    
+    };
     public static Dictionary<Vector2, int> level3 = new Dictionary<Vector2, int>
     {
         [new Vector2(1, 1)] = 2,
@@ -82,8 +82,7 @@ public class LevelParameters : MonoBehaviour
 
         [new Vector2(6, 1)] = 2,
         [new Vector2(6, 4)] = 2,
-    }; 
-    
+    };
     public static Dictionary<Vector2, int> level4 = new Dictionary<Vector2, int>
     {
         [new Vector2(1, 1)] = 1,
@@ -110,7 +109,6 @@ public class LevelParameters : MonoBehaviour
         [new Vector2(6, 3)] = 2,
         [new Vector2(6, 4)] = 2,
     };
-
     public static Dictionary<Vector2, int> level5 = new Dictionary<Vector2, int>
     {
         [new Vector2(1, 1)] = 3,
@@ -141,7 +139,6 @@ public class LevelParameters : MonoBehaviour
         [new Vector2(6, 3)] = 1,
         [new Vector2(6, 4)] = 1,
     };
-
     public static Dictionary<Vector2, int> level6 = new Dictionary<Vector2, int>
     {
         [new Vector2(1, 1)] = 3,
@@ -175,7 +172,9 @@ public class LevelParameters : MonoBehaviour
         [new Vector2(6, 4)] = 2,
     };
 
-    public static Dictionary<int, Dictionary<Vector2, int>> allLevels = new Dictionary<int, Dictionary<Vector2, int>> {
+    //all levels to call them from GameManager while clicking the start icon buttons. Buttons have int parameters that correspond to game level.  
+    public static Dictionary<int, Dictionary<Vector2, int>> allLevels = new Dictionary<int, Dictionary<Vector2, int>>
+    {
         [1] = level1,
         [2] = level2,
         [3] = level3,

@@ -7,21 +7,26 @@ public class Platform : MonoBehaviour
     Camera cameraOfGame;
     [HideInInspector]
     public Transform platformTransform;
+    [HideInInspector]
+    public GameManager gameManager;
 
     private float yPositionOfPlatform;
+    private float PLATFORM_RIB_LIMIT_FROM_Y_AXIS = 0.3f;
 
     public float leftBorderForPlatform;
     public float rightBorderForPlatform;
+
     private float ballHitPlatformXPoint;
-    [HideInInspector]
-    public GameManager gameManager;
+
     [HideInInspector]
     public ParticleSystem megaBallEffect;
     private MainModule main;
+
     [HideInInspector]
     public bool isParalized;
 
-    private int enemyAttackGap;
+    private int enemyAttackStep;
+    private const int ENEMY_ATTACK_STEP_LIMIT = 2;
 
     private void OnEnable()
     {
@@ -39,7 +44,7 @@ public class Platform : MonoBehaviour
         megaBallEffect.Clear();
         megaBallEffect.Stop();
         gameObject.SetActive(false);
-        enemyAttackGap = 0;
+        enemyAttackStep = 0;
     }
 
     private void OnCollisionEnter2D(Collision2D collision)
@@ -56,10 +61,10 @@ public class Platform : MonoBehaviour
                 gameManager.resetScoreBasis();
 
 
-            enemyAttackGap++;
-            if (enemyAttackGap > 2)
+            enemyAttackStep++;
+            if (enemyAttackStep > ENEMY_ATTACK_STEP_LIMIT)
             {
-                enemyAttackGap = 0;
+                enemyAttackStep = 0;
                 //each time player ball hits the platform, the enemy attacks
                 gameManager.enemyAttacks();
             }
@@ -67,12 +72,16 @@ public class Platform : MonoBehaviour
             //this value will determine if ball will move left or right depending to wich side of platform it hits
             //so player can manage the ball bounce direction
             ballHitPlatformXPoint = ball.ballTransform.position.x - platformTransform.position.x;
-            Vector2 velosityOfBall = ball.ballRigidbody.velocity;
-            ball.ballRigidbody.velocity = Vector2.zero;
+            Vector2 velocityOfBall = ball.ballRigidbody.velocity;
 
-            //if ball moves slower than start impulse it will get start impulse after hit the platform
-            if (velosityOfBall.magnitude < ball.startImpulseOfBall) ball.ballRigidbody.AddForce(new Vector2(ballHitPlatformXPoint, 1).normalized * ball.startImpulseOfBall, ForceMode2D.Impulse);
-            else ball.ballRigidbody.AddForce(new Vector2(ballHitPlatformXPoint, 1).normalized * velosityOfBall.magnitude, ForceMode2D.Impulse);
+            //condition to check if ball is not hitting the rib/edge of platform, cause in that case velocity of it should not be managable and must follow the engine physics
+            if (ball.ballTransform.position.y> yPositionOfPlatform+ PLATFORM_RIB_LIMIT_FROM_Y_AXIS)
+            {
+                //if ball moves slower than start impulse it will get start impulse after hit the platform
+                ball.ballRigidbody.velocity = Vector2.zero;
+                if (velocityOfBall.magnitude < ball.startImpulseOfBall) ball.ballRigidbody.AddForce(new Vector2(ballHitPlatformXPoint, 1).normalized * ball.startImpulseOfBall, ForceMode2D.Impulse);
+                else ball.ballRigidbody.AddForce(new Vector2(ballHitPlatformXPoint, 1).normalized * velocityOfBall.magnitude, ForceMode2D.Impulse);
+            }
 
             ball.rotationSpeed = gameManager.ballRotationSpeed;
         }
@@ -87,17 +96,6 @@ public class Platform : MonoBehaviour
         }
     }
 
-    IEnumerator paralisedTime()
-    {
-        isParalized = true;
-        main.startColor = Color.blue;
-        megaBallEffect.Play();
-        yield return new WaitForSeconds(3);
-        megaBallEffect.Clear();
-        megaBallEffect.Stop();
-        isParalized = false;
-    }
-
     private void OnTriggerEnter2D(Collider2D collision)
     {
         if (collision.gameObject.TryGetComponent<MegaBonus>(out MegaBonus megaBonus))
@@ -109,7 +107,16 @@ public class Platform : MonoBehaviour
         }
     }
 
-
+    IEnumerator paralisedTime()
+    {
+        isParalized = true;
+        main.startColor = Color.blue;
+        megaBallEffect.Play();
+        yield return new WaitForSeconds(3);
+        megaBallEffect.Clear();
+        megaBallEffect.Stop();
+        isParalized = false;
+    }
 
     private void Update()
     {

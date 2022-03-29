@@ -30,8 +30,6 @@ public class ObjectPuller : MonoBehaviour
     [HideInInspector]
     public List<GameObject> enemyBallPull;
 
-
-
     private void Awake()
     {
         willGrow = true;
