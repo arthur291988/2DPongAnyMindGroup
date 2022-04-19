@@ -4,9 +4,10 @@ using UnityEngine;
 
 public class EnemyBall : MonoBehaviour
 {
-    Transform ballTransform;
-    Rigidbody2D ballRigidbody;
-    private const float BALL_RITAATION_SPEED = 1800;
+    public byte ballLevel;
+    private Transform ballTransform;
+    private Rigidbody2D ballRigidbody;
+    private const float BALL_ROTATION_SPEED = 1800;
     private void OnEnable()
     {
         ballTransform = transform;
@@ -30,7 +31,7 @@ public class EnemyBall : MonoBehaviour
     }
     private void FixedUpdate()
     {
-        ballRigidbody.MoveRotation(ballRigidbody.rotation - BALL_RITAATION_SPEED * Time.fixedDeltaTime);
+        ballRigidbody.MoveRotation(ballRigidbody.rotation - BALL_ROTATION_SPEED * Time.fixedDeltaTime);
     }
 
 }

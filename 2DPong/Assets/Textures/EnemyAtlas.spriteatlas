@@ -38,19 +38,37 @@ SpriteAtlas:
     cachedData: {fileID: 0}
   m_MasterAtlas: {fileID: 0}
   m_PackedSprites:
+  - {fileID: 21300000, guid: 1590b822769333c44b2b31ffd72fd488, type: 3}
   - {fileID: 21300000, guid: cac16e923d5ddf84ca3261203527fa79, type: 3}
   - {fileID: 21300000, guid: 8e79b9d3b556f6548b0dc1d00f1b7230, type: 3}
+  - {fileID: 21300000, guid: 91e00814db92f684b92febed0db93850, type: 3}
+  - {fileID: 21300000, guid: 169999c4462417845a8de0a09e3d6710, type: 3}
   - {fileID: 21300000, guid: 3bce2415ca12c064693dca62be2f9085, type: 3}
+  - {fileID: 21300000, guid: 98a0638650d05f94bb18d22980bc8d49, type: 3}
   - {fileID: 21300000, guid: 637277e8516be4142ba81a7777ba2631, type: 3}
+  - {fileID: 21300000, guid: 2c21b729c95107443bc6a7afbedb9086, type: 3}
   - {fileID: 21300000, guid: 231d016bc51b4f64f897b0eda49d6e99, type: 3}
   - {fileID: 21300000, guid: 2612aa6b14f58fa42847f51179e7d206, type: 3}
+  - {fileID: 21300000, guid: 1ebf895d11b3d974e8e5b550f1d95967, type: 3}
+  - {fileID: 21300000, guid: 9a519e2ef3d8b704fa4c1a1a91f7a70b, type: 3}
+  - {fileID: 21300000, guid: 80a4848eb65762242950e5226606a6fe, type: 3}
+  - {fileID: 21300000, guid: 03c3cdbf51075414c902c56e379273c5, type: 3}
   m_PackedSpriteNamesToIndex:
+  - 52
   - 3
   - 21
+  - 53
+  - 41
   - 31
+  - 43
   - 2
+  - 4
   - 32
   - 1
+  - 51
+  - 54
+  - 42
+  - 5
   m_RenderDataMap: {}
   m_Tag: EnemyAtlas
   m_IsVariant: 0

@@ -17,6 +17,10 @@ public class Platform : MonoBehaviour
     public float rightBorderForPlatform;
 
     private float ballHitPlatformXPoint;
+    
+    //to set manually in inspector
+    [SerializeField]
+    private bool isSmallPlatform;
 
     [HideInInspector]
     public ParticleSystem megaBallEffect;
@@ -24,9 +28,12 @@ public class Platform : MonoBehaviour
 
     [HideInInspector]
     public bool isParalized;
+    [HideInInspector]
+    public bool isSlow;
 
-    private int enemyAttackStep;
-    private const int ENEMY_ATTACK_STEP_LIMIT = 2;
+    private byte enemyAttackStep;
+    private const byte ENEMY_ATTACK_STEP_LIMIT_ONE = 2;
+    private const byte ENEMY_ATTACK_STEP_LIMIT_TWO = 3;
 
     private void OnEnable()
     {
@@ -35,12 +42,15 @@ public class Platform : MonoBehaviour
         yPositionOfPlatform = platformTransform.position.y;
         if (megaBallEffect == null) megaBallEffect = GetComponent<ParticleSystem>();
         main = megaBallEffect.main;
+        if (isSmallPlatform) StartCoroutine(disactivateSmallPlatformTime());
     }
 
     public void disactivatePlatorm()
     {
         isParalized = false;
+        isSlow = false;
         StopCoroutine(paralisedTime());
+        StopCoroutine(slowTime());
         megaBallEffect.Clear();
         megaBallEffect.Stop();
         gameObject.SetActive(false);
@@ -51,22 +61,43 @@ public class Platform : MonoBehaviour
     {
         if (collision.gameObject.TryGetComponent<Ball>(out Ball ball)) {
 
-            gameManager.surikenSound.Play();
-            //transfer mega ball effect to the ball
-            if (megaBallEffect.isPlaying && !isParalized)
+            if (ball.thisGO.layer != 6)
             {
-                ball.megaBallEffect.Play();
-                megaBallEffect.Stop();
+                gameManager.surikenSound.Play();
+                //transfer mega ball effect to the ball
+                if (megaBallEffect.isPlaying && !isParalized && !isSlow)
+                {
+                    ball.megaBallEffect.Play();
+                    megaBallEffect.Stop();
+                }
             }
-                gameManager.resetScoreBasis();
+            else {
+                ball.thisGO.layer = 0;
+                ball.ballSpriteRenderer.color = Color.white;
+                if (!isParalized && !isSlow)
+                {
+                    gameManager.slowDownSound.Play();
+                    StartCoroutine(slowTime());
+                    if (megaBallEffect.isPlaying)
+                    {
+                        megaBallEffect.Stop();
+                    }
+                }
+            }
+            gameManager.resetScoreBasis();
 
 
             enemyAttackStep++;
-            if (enemyAttackStep > ENEMY_ATTACK_STEP_LIMIT)
+            if (enemyAttackStep == ENEMY_ATTACK_STEP_LIMIT_ONE)
             {
-                enemyAttackStep = 0;
                 //each time player ball hits the platform, the enemy attacks
-                gameManager.enemyAttacks();
+                gameManager.enemyAttacks(enemyAttackStep);
+            }
+            else if (enemyAttackStep == ENEMY_ATTACK_STEP_LIMIT_TWO)
+            {
+                //each time player ball hits the platform, the enemy attacks
+                gameManager.enemyAttacks(enemyAttackStep);
+                enemyAttackStep = 0;
             }
 
             //this value will determine if ball will move left or right depending to wich side of platform it hits
@@ -87,11 +118,31 @@ public class Platform : MonoBehaviour
         }
         else if (collision.gameObject.TryGetComponent<EnemyBall>(out EnemyBall enenmyBall))
         {
-            if (!isParalized)
+            enenmyBall.gameObject.SetActive(false);
+            if (enenmyBall.ballLevel == 0 && !isSmallPlatform)
             {
-                enenmyBall.gameObject.SetActive(false);
-                gameManager.iceEffectSound.Play();
-                StartCoroutine(paralisedTime());
+                gameManager.surikenSound.Play();
+                gameManager.platformSmall.enemyAttackStep = gameManager.platform.enemyAttackStep;
+                disactivatePlatorm();
+                gameManager.platform = gameManager.platformSmall;
+                gameManager.platform.transform.position = platformTransform.position;
+                gameManager.platform.gameObject.SetActive(true);
+            }
+            else if (enenmyBall.ballLevel == 1)
+            {
+                if (!isParalized && !isSlow)
+                {
+                    gameManager.slowDownSound.Play();
+                    StartCoroutine(slowTime());
+                }
+            }
+            else
+            {
+                if (!isParalized)
+                {
+                    gameManager.iceEffectSound.Play();
+                    StartCoroutine(paralisedTime());
+                }
             }
         }
     }
@@ -107,7 +158,7 @@ public class Platform : MonoBehaviour
         }
     }
 
-    IEnumerator paralisedTime()
+    private IEnumerator paralisedTime()
     {
         isParalized = true;
         main.startColor = Color.blue;
@@ -117,13 +168,33 @@ public class Platform : MonoBehaviour
         megaBallEffect.Stop();
         isParalized = false;
     }
+    private IEnumerator slowTime()
+    {
+        isSlow = true;
+        main.startColor = Color.white;
+        megaBallEffect.Play();
+        yield return new WaitForSeconds(3);
+        megaBallEffect.Clear();
+        megaBallEffect.Stop();
+        isSlow = false;
+    }
+    private IEnumerator disactivateSmallPlatformTime()
+    {
+        yield return new WaitForSeconds(7);
+        gameManager.platformBig.enemyAttackStep = gameManager.platform.enemyAttackStep;
+        disactivatePlatorm();
+        gameManager.platform = gameManager.platformBig;
+        gameManager.platform.platformTransform.position = platformTransform.position;
+        gameManager.platform.gameObject.SetActive(true);
+    }
 
     private void Update()
     {
         if (Input.GetMouseButton(0) && !gameManager.winLosePanel.activeInHierarchy && !isParalized)
         {
             //moving the platform with touch/mouse position if it is held down/touched
-            platformTransform.position = new Vector3(cameraOfGame.ScreenToWorldPoint(Input.mousePosition).x, yPositionOfPlatform, 0);
+            if (isSlow) platformTransform.position = Vector2.Lerp(platformTransform.position, new Vector2(cameraOfGame.ScreenToWorldPoint(Input.mousePosition).x, yPositionOfPlatform), 0.01f); 
+            else platformTransform.position = new Vector3(cameraOfGame.ScreenToWorldPoint(Input.mousePosition).x, yPositionOfPlatform, 0);
 
             //holding the platform inside the screen borders
             if (platformTransform.position.x < leftBorderForPlatform) platformTransform.position = new Vector2(leftBorderForPlatform, yPositionOfPlatform);

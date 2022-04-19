@@ -31,9 +31,16 @@ public class Ball : MonoBehaviour
     [HideInInspector]
     public ParticleSystem megaBallEffect;
 
+    [HideInInspector]
+    public GameObject thisGO;
+    [HideInInspector]
+    public SpriteRenderer ballSpriteRenderer;
+
 
     private void OnEnable()
     {
+        thisGO = gameObject;
+        ballSpriteRenderer = GetComponent<SpriteRenderer>();
         trapCheckTimer = TRAP_CHECK_TIMER_LIMIT;
         rotationSpeed = 0; //on start the ball does not rotate
         startImpulseOfBall = gameManager.ballMoveSpeed;
@@ -49,7 +56,7 @@ public class Ball : MonoBehaviour
     {
         ballBurstEffect();
         ballRigidbody.bodyType = RigidbodyType2D.Kinematic;
-        gameObject.SetActive(false);
+        thisGO.SetActive(false);
         gameManager.gameIsOn = false;
         if (!win)
         {
@@ -113,7 +120,7 @@ public class Ball : MonoBehaviour
     void Update()
     {
         //rotation speed of ball decreases with time 
-        if (rotationSpeed > 500) rotationSpeed = Mathf.Lerp(rotationSpeed, 500, 0.003f);
+        if (rotationSpeed > 250) rotationSpeed = Mathf.Lerp(rotationSpeed, 250, 0.004f);
 
         //monitoring the velocity reduce of ball or horisontal trap
         if (gameManager.gameIsOn && ((ballRigidbody.velocity.y < MIN_VERTICAL_ANGLE && ballRigidbody.velocity.y > -MIN_VERTICAL_ANGLE) || ballRigidbody.velocity.magnitude < startImpulseOfBall))

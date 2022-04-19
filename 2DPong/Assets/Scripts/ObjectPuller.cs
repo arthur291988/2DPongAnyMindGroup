@@ -19,7 +19,11 @@ public class ObjectPuller : MonoBehaviour
     [SerializeField]
     private GameObject enemy;
     [SerializeField]
-    private GameObject enemyBall;
+    private GameObject enemyBall0;
+    [SerializeField]
+    private GameObject enemyBall1;
+    [SerializeField]
+    private GameObject enemyBall2;
 
     [HideInInspector]
     public List<GameObject> ballBurstEffectPull;
@@ -28,7 +32,11 @@ public class ObjectPuller : MonoBehaviour
     [HideInInspector]
     public List<GameObject> enemyPull;
     [HideInInspector]
-    public List<GameObject> enemyBallPull;
+    public List<GameObject> enemyBallPull0;
+    [HideInInspector]
+    public List<GameObject> enemyBallPull1;
+    [HideInInspector]
+    public List<GameObject> enemyBallPull2;
 
     private void Awake()
     {
@@ -41,7 +49,9 @@ public class ObjectPuller : MonoBehaviour
         ballBurstEffectPull = new List<GameObject>();
         destroyEffectPull = new List<GameObject>();
         enemyPull = new List<GameObject>();
-        enemyBallPull = new List<GameObject>();
+        enemyBallPull0 = new List<GameObject>();
+        enemyBallPull1 = new List<GameObject>();
+        enemyBallPull2 = new List<GameObject>();
 
         for (int i = 0; i < pullOfObjects2; i++)
         {
@@ -55,10 +65,18 @@ public class ObjectPuller : MonoBehaviour
             obj.SetActive(false);
             destroyEffectPull.Add(obj);
 
-            GameObject obj1 = (GameObject)Instantiate(enemyBall);
+            GameObject obj1 = (GameObject)Instantiate(enemyBall0);
             obj1.SetActive(false);
-            enemyBallPull.Add(obj1);
-            
+            enemyBallPull0.Add(obj1);
+
+            GameObject obj2 = (GameObject)Instantiate(enemyBall1);
+            obj2.SetActive(false);
+            enemyBallPull1.Add(obj2);
+
+            GameObject obj3 = (GameObject)Instantiate(enemyBall2);
+            obj3.SetActive(false);
+            enemyBallPull2.Add(obj3);
+
         }
         for (int i = 0; i < pullOfObjects35; i++)
         {
@@ -79,9 +97,11 @@ public class ObjectPuller : MonoBehaviour
     {
         return enemyPull;
     }
-    public List<GameObject> GetEnemyBallPullList()
+    public List<GameObject> GetEnemyBallPullList(byte levelOfBall)
     {
-        return enemyBallPull;
+        if (levelOfBall == 0) return enemyBallPull0;
+        else if (levelOfBall == 1) return enemyBallPull1;
+        else return enemyBallPull2;
     }
 
     //universal method to set active proper game object from the list of GOs, it just needs to get correct List of game objects

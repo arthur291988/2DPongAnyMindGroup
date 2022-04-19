@@ -15,7 +15,8 @@ public class Levels : MonoBehaviour
     public int achievementsScore;
     public Button button;
 
-    public void setAchievements() {
+    public void setAchievements(int achivement) {
+        if (achivement > achievementsScore) achievementsScore = achivement;
         for (int i = 0; i < achievementIcons.Count; i++) {
             if (i < achievementsScore) achievementIcons[i].GetComponent<RawImage>().color = new Color(0.93f, 0, 0, 1);
             if (!achievementIcons[i].activeInHierarchy) achievementIcons[i].SetActive(true);
