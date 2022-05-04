@@ -576,7 +576,7 @@ public class GameManager : MonoBehaviour, IUnityAdsListener
         }
         winLosePanel.SetActive(false);
         startTheLevel(currentLevel);
-        showInterstitials();
+        if (adsOff == 0) showInterstitials();
     }
 
     public void goToMenuButton()
@@ -595,7 +595,7 @@ public class GameManager : MonoBehaviour, IUnityAdsListener
         levelTextGO.SetActive(false);
         scoreTitle.SetActive(false);
         availableBallsPanel.SetActive(false);
-        showInterstitials();
+        if (adsOff==0) showInterstitials();
     }
 
     #endregion
